@@ -666,6 +666,45 @@
                             </div>
                         )}
 
+                        {/* --- PERSONAL BREAKTHROUGH TAB --- */}
+                        {activeTab === 'pb' && (
+                            <div className="glass p-6 rounded-3xl border border-white/60 shadow-xl animate-fade-in max-w-2xl mx-auto">
+                                <h3 className="text-xl font-bold text-brand-periwinkle mb-6 flex items-center gap-2">
+                                    <Icons.Sparkles /> Daily Practices
+                                </h3>
+                                <div className="space-y-4">
+                                    <Toggle 
+                                        label="Morning Moment" 
+                                        checked={currentPB.moment} 
+                                        onChange={(val) => updatePB({ moment: val })} 
+                                        activeClass="bg-gradient-to-r from-brand-yellow to-brand-orange text-white border-brand-yellow"
+                                        icon="✨"
+                                    />
+                                    <Toggle 
+                                        label="Meditation" 
+                                        checked={currentPB.meditation} 
+                                        onChange={(val) => updatePB({ meditation: val })} 
+                                        activeClass="bg-gradient-to-r from-brand-salmon to-brand-pink text-white border-brand-salmon"
+                                        icon="🧘‍♀️"
+                                    />
+                                    <Toggle 
+                                        label="Stretch / Walk" 
+                                        checked={currentPB.stretch} 
+                                        onChange={(val) => updatePB({ stretch: val })} 
+                                        activeClass="bg-gradient-to-r from-brand-mint to-brand-teal text-white border-brand-mint"
+                                        icon="🏃‍♀️"
+                                    />
+                                    <Toggle 
+                                        label="Rooting" 
+                                        checked={currentPB.rooting} 
+                                        onChange={(val) => updatePB({ rooting: val })} 
+                                        activeClass="bg-gradient-to-r from-brand-purple to-brand-periwinkle text-white border-brand-purple"
+                                        icon="🌳"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         {/* EXPORT MODAL */}
                         <Modal isOpen={showExportModal} onClose={() => setShowExportModal(false)} title="Export & Backup">
                             <div className="space-y-6">
