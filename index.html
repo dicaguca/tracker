@@ -343,6 +343,12 @@
                 reader.readAsText(file);
             };
 
+            // Calculate Today and Yesterday strings for button highlighting
+            const todayStr = new Date().toISOString().split('T')[0];
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
             // --- DASHBOARD SCREEN ---
             const ReviewScreen = () => (
                 <div className="fixed inset-0 bg-stone-50 z-50 overflow-y-auto animate-fade-in">
@@ -511,8 +517,18 @@
                             </div>
                             
                             <div className="flex items-center gap-2 bg-stone-100 p-1 rounded-xl">
-                                <button onClick={() => { setSelectedDate(new Date().toISOString().split('T')[0]); }} className="px-4 py-2 rounded-lg text-sm font-bold text-stone-600 hover:bg-white hover:shadow-sm transition-all">Today</button>
-                                <button onClick={() => { const d = new Date(); d.setDate(d.getDate() - 1); setSelectedDate(d.toISOString().split('T')[0]); }} className="px-4 py-2 rounded-lg text-sm font-bold text-stone-600 hover:bg-white hover:shadow-sm transition-all">Yesterday</button>
+                                <button 
+                                    onClick={() => setSelectedDate(todayStr)} 
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedDate === todayStr ? 'bg-white shadow-sm text-brand-orange' : 'text-stone-600 hover:bg-white/50'}`}
+                                >
+                                    Today
+                                </button>
+                                <button 
+                                    onClick={() => setSelectedDate(yesterdayStr)} 
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedDate === yesterdayStr ? 'bg-white shadow-sm text-brand-orange' : 'text-stone-600 hover:bg-white/50'}`}
+                                >
+                                    Yesterday
+                                </button>
                             </div>
                         </div>
 
