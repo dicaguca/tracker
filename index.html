@@ -130,20 +130,26 @@
         };
 
         // New Comparison Chart Component
-        const SimpleBarChart = ({ data, color, title, height = "h-32" }) => {
+        const SimpleBarChart = ({ data, color, title, height = "h-48" }) => {
             const max = Math.max(...data.map(d => d.value), 1);
             return (
-                <div className="bg-white p-5 rounded-3xl border border-stone-100 shadow-sm mb-6">
-                    <h4 className="font-bold text-stone-800 mb-4 text-sm uppercase tracking-wide">{title}</h4>
-                    <div className={`flex items-end gap-2 ${height}`}>
+                <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm mb-6">
+                    <h4 className="font-bold text-stone-800 mb-12 text-sm uppercase tracking-wide">{title}</h4>
+                    <div className={`flex items-end gap-3 ${height} mb-4`}>
                         {data.map((d, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                                <div className="text-[10px] font-bold text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity mb-1">{d.value}%</div>
+                            <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2 group h-full">
+                                <div className="text-sm font-bold text-stone-600">{d.value}%</div>
                                 <div 
                                     className={`w-full rounded-t-lg transition-all duration-500 ${color}`}
-                                    style={{ height: `${(d.value / 100) * 100}%` }}
+                                    style={{ height: `${d.value}%` }}
                                 ></div>
-                                <div className="text-[10px] font-bold text-stone-500 rotate-0 truncate w-full text-center">{d.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="flex items-center gap-3 mt-2">
+                        {data.map((d, i) => (
+                            <div key={i} className="flex-1 text-center">
+                                <div className="text-xs font-bold text-stone-500">{d.label}</div>
                             </div>
                         ))}
                     </div>
@@ -200,6 +206,7 @@
             const [activeTab, setActiveTab] = useState('daily');
             const [showReview, setShowReview] = useState(false);
             const [showComparison, setShowComparison] = useState(false);
+            const [trendsTab, setTrendsTab] = useState('daily'); // New state for trends tabs
             
             // --- INITIAL STATE ---
             const [dailyLogs, setDailyLogs] = useState(() => {
@@ -267,26 +274,59 @@
                 const months = [...new Set(allDates.map(d => d.slice(0, 7)))].sort();
                 
                 return months.map(m => {
-                    const monthDates = allDates.filter(d => d.startsWith(m));
-                    const total = monthDates.length || 1;
+                    const dailyDates = Object.keys(dailyLogs).filter(d => d.startsWith(m));
+                    const pbDates = Object.keys(pbLogs).filter(d => d.startsWith(m));
+                    const totalDailyDays = dailyDates.length || 1;
+                    const totalPbDays = pbDates.length || 1;
                     
-                    let mrCount = 0, sdrCount = 0, pbMomentCount = 0, pbMeditationCount = 0;
+                    // Daily Habits counts
+                    let mrCount = 0, mrEarlyCount = 0, sdrCount = 0, sdrEarlyCount = 0;
+                    let lightsCount = 0, tvCount = 0, lsibCount = 0, bedCount = 0;
                     
-                    monthDates.forEach(d => {
-                        if (dailyLogs[d]?.mr?.done) mrCount++;
-                        if (dailyLogs[d]?.sdr?.done) sdrCount++;
-                        if (pbLogs[d]?.moment) pbMomentCount++;
-                        if (pbLogs[d]?.meditation) pbMeditationCount++;
+                    dailyDates.forEach(d => {
+                        const log = dailyLogs[d];
+                        if (log?.mr?.done) {
+                            mrCount++;
+                            if (log.mr.early) mrEarlyCount++;
+                        }
+                        if (log?.sdr?.done) {
+                            sdrCount++;
+                            if (log.sdr.early) sdrEarlyCount++;
+                        }
+                        if (log?.sleep?.lights) lightsCount++;
+                        if (log?.sleep?.tv) tvCount++;
+                        if (log?.sleep?.noLSIB) lsibCount++;
+                        if (log?.sleep?.bedtime) bedCount++;
+                    });
+
+                    // PB counts
+                    let momentCount = 0, meditationCount = 0, stretchCount = 0, rootingCount = 0;
+                    pbDates.forEach(d => {
+                        const log = pbLogs[d];
+                        if (log?.moment) momentCount++;
+                        if (log?.meditation) meditationCount++;
+                        if (log?.stretch) stretchCount++;
+                        if (log?.rooting) rootingCount++;
                     });
 
                     const shortMonth = new Date(m + '-02').toLocaleDateString('en-US', { month: 'short' });
 
                     return {
                         label: shortMonth,
-                        mr: Math.round((mrCount / total) * 100),
-                        sdr: Math.round((sdrCount / total) * 100),
-                        moment: Math.round((pbMomentCount / total) * 100),
-                        meditation: Math.round((pbMeditationCount / total) * 100),
+                        // Daily Habits
+                        mr: Math.round((mrCount / totalDailyDays) * 100),
+                        mrEarly: Math.round((mrEarlyCount / totalDailyDays) * 100),
+                        sdr: Math.round((sdrCount / totalDailyDays) * 100),
+                        sdrEarly: Math.round((sdrEarlyCount / totalDailyDays) * 100),
+                        lights: Math.round((lightsCount / totalDailyDays) * 100),
+                        tv: Math.round((tvCount / totalDailyDays) * 100),
+                        lsib: Math.round((lsibCount / totalDailyDays) * 100),
+                        bedtime: Math.round((bedCount / totalDailyDays) * 100),
+                        // PB
+                        moment: Math.round((momentCount / totalPbDays) * 100),
+                        meditation: Math.round((meditationCount / totalPbDays) * 100),
+                        stretch: Math.round((stretchCount / totalPbDays) * 100),
+                        rooting: Math.round((rootingCount / totalPbDays) * 100),
                     };
                 });
             };
@@ -406,37 +446,102 @@
             // --- COMPARISON SCREEN ---
             const ComparisonScreen = () => (
                 <div className="fixed inset-0 bg-stone-50 z-50 overflow-y-auto animate-fade-in">
-                    <div className="max-w-4xl mx-auto p-4 md:p-8">
+                    <div className="max-w-6xl mx-auto p-4 md:p-8">
                         <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-stone-200">
                             <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-3">
                                 <span className="bg-brand-mint/20 text-brand-mint p-2 rounded-xl"><Icons.Trends /></span>
-                                Trends & Comparisons
+                                Monthly Trends
                             </h2>
                             <button onClick={() => setShowComparison(false)} className="bg-stone-200 hover:bg-stone-300 p-2 rounded-full transition-colors text-stone-500"><Icons.X /></button>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <SimpleBarChart 
-                                title="Morning Ritual Consistency" 
-                                data={trends.map(t => ({ label: t.label, value: t.mr }))} 
-                                color="bg-brand-orange" 
-                            />
-                            <SimpleBarChart 
-                                title="Shutdown Ritual Consistency" 
-                                data={trends.map(t => ({ label: t.label, value: t.sdr }))} 
-                                color="bg-brand-purple" 
-                            />
-                            <SimpleBarChart 
-                                title="Morning Moment (PB)" 
-                                data={trends.map(t => ({ label: t.label, value: t.moment }))} 
-                                color="bg-brand-yellow" 
-                            />
-                            <SimpleBarChart 
-                                title="Meditation (PB)" 
-                                data={trends.map(t => ({ label: t.label, value: t.meditation }))} 
-                                color="bg-brand-salmon" 
-                            />
+                        {/* Tabs for Daily Habits vs Personal Breakthrough */}
+                        <div className="flex gap-4 mb-6">
+                            <button 
+                                onClick={() => setTrendsTab('daily')} 
+                                className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${trendsTab === 'daily' ? 'bg-gradient-to-r from-brand-orange to-brand-salmon text-white shadow-lg' : 'bg-white text-stone-500 hover:bg-stone-50'}`}
+                            >
+                                Daily Habits
+                            </button>
+                            <button 
+                                onClick={() => setTrendsTab('pb')} 
+                                className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${trendsTab === 'pb' ? 'bg-gradient-to-r from-brand-periwinkle to-brand-purple text-white shadow-lg' : 'bg-white text-stone-500 hover:bg-stone-50'}`}
+                            >
+                                Personal Breakthrough
+                            </button>
                         </div>
+
+                        {/* Daily Habits Trends */}
+                        {trendsTab === 'daily' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <SimpleBarChart 
+                                    title="Morning Ritual Completion" 
+                                    data={trends.map(t => ({ label: t.label, value: t.mr }))} 
+                                    color="bg-gradient-to-r from-brand-orange to-brand-salmon" 
+                                />
+                                <SimpleBarChart 
+                                    title="Morning Ritual (Early)" 
+                                    data={trends.map(t => ({ label: t.label, value: t.mrEarly }))} 
+                                    color="bg-brand-yellow" 
+                                />
+                                <SimpleBarChart 
+                                    title="Shutdown Ritual Completion" 
+                                    data={trends.map(t => ({ label: t.label, value: t.sdr }))} 
+                                    color="bg-gradient-to-r from-brand-periwinkle to-brand-purple" 
+                                />
+                                <SimpleBarChart 
+                                    title="Shutdown Ritual (Early)" 
+                                    data={trends.map(t => ({ label: t.label, value: t.sdrEarly }))} 
+                                    color="bg-brand-periwinkle" 
+                                />
+                                <SimpleBarChart 
+                                    title="Sleep Lights Off" 
+                                    data={trends.map(t => ({ label: t.label, value: t.lights }))} 
+                                    color="bg-brand-yellow" 
+                                />
+                                <SimpleBarChart 
+                                    title="No TV / Soundscapes" 
+                                    data={trends.map(t => ({ label: t.label, value: t.tv }))} 
+                                    color="bg-brand-periwinkle" 
+                                />
+                                <SimpleBarChart 
+                                    title="No Late Snacks" 
+                                    data={trends.map(t => ({ label: t.label, value: t.lsib }))} 
+                                    color="bg-gradient-to-r from-brand-mint to-brand-teal" 
+                                />
+                                <SimpleBarChart 
+                                    title="Bedtime < Midnight" 
+                                    data={trends.map(t => ({ label: t.label, value: t.bedtime }))} 
+                                    color="bg-brand-purple" 
+                                />
+                            </div>
+                        )}
+
+                        {/* Personal Breakthrough Trends */}
+                        {trendsTab === 'pb' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <SimpleBarChart 
+                                    title="Morning Moment" 
+                                    data={trends.map(t => ({ label: t.label, value: t.moment }))} 
+                                    color="bg-gradient-to-r from-brand-yellow to-brand-orange" 
+                                />
+                                <SimpleBarChart 
+                                    title="Meditation" 
+                                    data={trends.map(t => ({ label: t.label, value: t.meditation }))} 
+                                    color="bg-gradient-to-r from-brand-salmon to-brand-pink" 
+                                />
+                                <SimpleBarChart 
+                                    title="Stretch / Walk" 
+                                    data={trends.map(t => ({ label: t.label, value: t.stretch }))} 
+                                    color="bg-gradient-to-r from-brand-mint to-brand-teal" 
+                                />
+                                <SimpleBarChart 
+                                    title="Rooting" 
+                                    data={trends.map(t => ({ label: t.label, value: t.rooting }))} 
+                                    color="bg-gradient-to-r from-brand-purple to-brand-periwinkle" 
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             );
@@ -453,7 +558,7 @@
                             </h2>
                             <div className="flex items-center gap-4">
                                 <button onClick={() => setShowComparison(true)} className="text-sm font-bold text-brand-purple hover:bg-brand-purple/10 px-3 py-2 rounded-lg transition-colors flex items-center gap-1">
-                                    <Icons.Trends /> Compare Months
+                                    <Icons.Trends /> View Trends
                                 </button>
                                 <input 
                                     type="month" 
