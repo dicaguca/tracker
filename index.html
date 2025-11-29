@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habits & PB Tracker</title>
+    
+    <!-- FAVICON -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23faa52e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11l3 3L22 4'/%3E%3Cpath d='M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'/%3E%3C/svg%3E">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-mint': '#30d09a',
+                        'brand-teal': '#17bba4',
+                        'brand-periwinkle': '#8e9fe7',
+                        'brand-purple': '#a791f2',
+                        'brand-yellow': '#ffdd65',
+                        'brand-orange': '#faa52e',
+                        'brand-salmon': '#f7817d',
+                        'brand-pink': '#f575a9',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Nunito', sans-serif; transition: background 0.5s ease; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); }
+        .modal-overlay { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); }
+        .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        const Icons = {
+            Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg>,
+            Moon: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
+            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+            Chart: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+            Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+            ChevronLeft: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
+            ChevronRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+            Sparkles: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" transform="scale(0.85) translate(2,2)"/></svg>,
+            Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+            Upload: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        };
+
+        const INITIAL_DAILY = {
+            workday: '',
+            isWeekend: false,
+            mr: { done: false, early: false, count: 0 },
+            sdr: { done: false, early: false, count: 0 },
+            sleep: { lights: false, tv: false, noLSIB: false, bedtime: false }
+        };
+
+        const INITIAL_PB = {
+            moment: false,
+            meditation: false,
+            stretch: false,
+            rooting: false
+        };
+
+        // --- COMPONENTS ---
+        
+        const ProgressBar = ({ label, value, max, gradient, subLabel }) => {
+            const percentage = max > 0 ? Math.round((value / max) * 100) : 0;
+            return (
+                <div className="mb-4">
+                    <div className="flex justify-between items-end mb-1">
+                        <span className="font-bold text-stone-700 text-sm">{label}</span>
+                        <div className="text-right">
+                            <span className="text-sm font-bold text-stone-800">{percentage}%</span>
+                            {subLabel && <span className="text-xs text-stone-400 ml-2">({subLabel})</span>}
+                        </div>
+                    </div>
+                    <div className="w-full bg-stone-100 rounded-full h-3 overflow-hidden shadow-inner">
+                        <div className={`h-full rounded-full transition-all duration-1000 ${gradient}`} style={{ width: `${percentage}%` }}></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const StackedBar = ({ label, early, late, totalDays, gradientEarly, gradientLate }) => {
+            const earlyPct = totalDays > 0 ? (early / totalDays) * 100 : 0;
+            const latePct = totalDays > 0 ? (late / totalDays) * 100 : 0;
+            
+            return (
+                <div className="mb-6">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold text-stone-700">{label}</span>
+                        <div className="text-xs font-mono text-stone-500">
+                             <span className="font-bold text-stone-800">{early + late}</span>/{totalDays} Done
+                        </div>
+                    </div>
+                    <div className="flex w-full h-4 rounded-full overflow-hidden shadow-sm bg-stone-100">
+                        {early > 0 && <div className={`h-full ${gradientEarly}`} style={{ width: `${earlyPct}%` }} title={`Early: ${early}`}></div>}
+                        {late > 0 && <div className={`h-full ${gradientLate}`} style={{ width: `${latePct}%` }} title={`Late: ${late}`}></div>}
+                    </div>
+                    <div className="flex justify-between mt-1 text-[10px] text-stone-400 font-bold uppercase tracking-wider">
+                        <div className="flex items-center gap-1"><div className={`w-2 h-2 rounded-full ${gradientEarly}`}></div> Before Time ({early})</div>
+                        <div className="flex items-center gap-1"><div className={`w-2 h-2 rounded-full ${gradientLate}`}></div> After Time ({late})</div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Toggle = ({ label, checked, onChange, icon, activeClass }) => (
+            <div onClick={() => onChange(!checked)} className={`cursor-pointer select-none p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between ${checked ? `bg-white ${activeClass} shadow-sm` : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
+                <div className="flex items-center gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${checked ? activeClass.replace('border-', 'bg-').replace('text-', 'text-white ') : 'bg-gray-200'}`}>
+                        {checked && <Icons.Check />}
+                    </div>
+                    <span className={`font-semibold ${checked ? 'text-gray-800' : 'text-gray-500'}`}>{label}</span>
+                </div>
+                {icon && <div className="text-2xl">{icon}</div>}
+            </div>
+        );
+
+        const NumberInput = ({ value, max, onChange, label }) => (
+            <div className="bg-white p-3 rounded-xl border-2 border-gray-100 flex items-center justify-between">
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">{label}</span>
+                <div className="flex items-center gap-2">
+                    <input 
+                        type="number" 
+                        value={value} 
+                        onChange={(e) => onChange(parseInt(e.target.value) || 0)}
+                        className="w-12 text-center text-xl font-bold text-gray-800 bg-gray-50 rounded-lg py-1 outline-none focus:ring-2 focus:ring-purple-200"
+                    />
+                    <span className="text-gray-400 font-medium">/ {max}</span>
+                </div>
+            </div>
+        );
+
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden slide-up max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 sticky top-0 z-10">
+                            <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+                            <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full"><Icons.X /></button>
+                        </div>
+                        <div className="p-6">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        function App() {
+            const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+            const [activeTab, setActiveTab] = useState('daily');
+            const [showReview, setShowReview] = useState(false);
+            
+            // --- INITIAL STATE (Empty by default, waits for localStorage or import) ---
+            const [dailyLogs, setDailyLogs] = useState(() => {
+                const saved = JSON.parse(localStorage.getItem('habits-daily'));
+                return saved || {};
+            });
+            const [pbLogs, setPbLogs] = useState(() => {
+                const saved = JSON.parse(localStorage.getItem('habits-pb'));
+                return saved || {};
+            });
+
+            const [showExportModal, setShowExportModal] = useState(false);
+            const [exportMonth, setExportMonth] = useState(new Date().toISOString().slice(0, 7));
+            const [reviewMonth, setReviewMonth] = useState(new Date().toISOString().slice(0, 7));
+
+            useEffect(() => localStorage.setItem('habits-daily', JSON.stringify(dailyLogs)), [dailyLogs]);
+            useEffect(() => localStorage.setItem('habits-pb', JSON.stringify(pbLogs)), [pbLogs]);
+
+            const getTheme = () => {
+                if (activeTab === 'daily') return {
+                    bg: 'bg-gradient-to-br from-brand-yellow/20 via-brand-orange/10 to-brand-salmon/20',
+                    accent: 'from-brand-orange to-brand-salmon',
+                };
+                if (activeTab === 'pb') return {
+                    bg: 'bg-gradient-to-br from-brand-periwinkle/20 via-brand-teal/10 to-brand-purple/20',
+                    accent: 'from-brand-periwinkle to-brand-purple',
+                };
+            };
+            const theme = getTheme();
+
+            const currentDaily = dailyLogs[selectedDate] || INITIAL_DAILY;
+            const currentPB = pbLogs[selectedDate] || INITIAL_PB;
+
+            const updateDaily = (updates) => {
+                setDailyLogs(prev => ({
+                    ...prev,
+                    [selectedDate]: { ...(prev[selectedDate] || INITIAL_DAILY), ...updates }
+                }));
+            };
+
+            const updatePB = (updates) => {
+                setPbLogs(prev => ({
+                    ...prev,
+                    [selectedDate]: { ...(prev[selectedDate] || INITIAL_PB), ...updates }
+                }));
+            };
+
+            const shiftDate = (days) => {
+                const d = new Date(selectedDate);
+                d.setDate(d.getDate() + days);
+                setSelectedDate(d.toISOString().split('T')[0]);
+            };
+            const displayDate = new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+            const getReviewStats = (month) => {
+                const dailyDates = Object.keys(dailyLogs).filter(d => d.startsWith(month));
+                const pbDates = Object.keys(pbLogs).filter(d => d.startsWith(month));
+                
+                const daysInMonth = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
+                // Use actual logged days or sensible default if empty
+                const totalDays = dailyDates.length > 0 ? dailyDates.length : daysInMonth; 
+
+                const workdayTimes = dailyDates
+                    .filter(d => dailyLogs[d].workday && !dailyLogs[d].isWeekend && dailyLogs[d].workday.includes(':'))
+                    .map(d => {
+                        const [h, m] = dailyLogs[d].workday.split(':').map(Number);
+                        return h * 60 + m;
+                    });
+                
+                const avgWorkday = workdayTimes.length > 0 
+                    ? Math.round(workdayTimes.reduce((a,b) => a+b, 0) / workdayTimes.length) 
+                    : 0;
+                const avgWorkdayStr = avgWorkday 
+                    ? `${Math.floor(avgWorkday/60)}:${(avgWorkday%60).toString().padStart(2,'0')}` 
+                    : '--:--';
+
+                const mrEarly = dailyDates.filter(d => dailyLogs[d].mr.done && dailyLogs[d].mr.early).length;
+                const mrLate = dailyDates.filter(d => dailyLogs[d].mr.done && !dailyLogs[d].mr.early).length;
+
+                const sdrEarly = dailyDates.filter(d => dailyLogs[d].sdr.done && dailyLogs[d].sdr.early).length;
+                const sdrLate = dailyDates.filter(d => dailyLogs[d].sdr.done && !dailyLogs[d].sdr.early).length;
+
+                let lights=0, tv=0, lsib=0, bed=0;
+                dailyDates.forEach(d => {
+                    if(dailyLogs[d].sleep.lights) lights++;
+                    if(dailyLogs[d].sleep.tv) tv++;
+                    if(dailyLogs[d].sleep.noLSIB) lsib++;
+                    if(dailyLogs[d].sleep.bedtime) bed++;
+                });
+
+                let pbCounts = { moment: 0, meditation: 0, stretch: 0, rooting: 0 };
+                pbDates.forEach(d => {
+                    const l = pbLogs[d];
+                    if (l.moment) pbCounts.moment++;
+                    if (l.meditation) pbCounts.meditation++;
+                    if (l.stretch) pbCounts.stretch++;
+                    if (l.rooting) pbCounts.rooting++;
+                });
+
+                return {
+                    avgWorkdayStr, totalDays,
+                    mr: { early: mrEarly, late: mrLate },
+                    sdr: { early: sdrEarly, late: sdrLate },
+                    sleep: { lights, tv, lsib, bed },
+                    pb: pbCounts
+                };
+            };
+            const reviewStats = getReviewStats(reviewMonth);
+
+            const generateMarkdown = (type) => {
+                const dates = Object.keys(type === 'daily' ? dailyLogs : pbLogs)
+                    .filter(d => d.startsWith(exportMonth))
+                    .sort();
+                if (dates.length === 0) return `No data found for ${exportMonth}`;
+                const monthName = new Date(exportMonth + '-02').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+                if (type === 'daily') {
+                    let md = `### Daily Habits Tracker - ${monthName}\n\n`;
+                    md += `| Date | Workday | MR | MR # | SDR | SDR # | Sleep lights | Sleep TV | No LSIB | Bedtime |\n|---|---|---|---|---|---|---|---|---|---|\n`;
+                    dates.forEach(date => {
+                        const l = dailyLogs[date];
+                        const dateStr = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                        md += `| ${dateStr} | ${l.isWeekend ? '—' : (l.workday || '')} | ${l.mr.done ? (l.mr.early ? '🌞' : '☑️') : (l.mr.done === false ? '❌' : '')} | ${l.mr.count > 0 ? l.mr.count + '/14' : ''} | ${l.sdr.done ? (l.sdr.early ? '🌙' : '☑️') : (l.sdr.done === false ? '❌' : '')} | ${l.sdr.count > 0 ? l.sdr.count + '/9' : ''} | ${l.sleep.lights ? '💡' : '❌'} | ${l.sleep.tv ? '📺' : '❌'} | ${l.sleep.noLSIB ? '💪' : '❌'} | ${l.sleep.bedtime ? '🌚' : '❌'} |\n`;
+                    });
+                    return md;
+                } else {
+                    let md = `### Personal Breakthrough - ${monthName}\n\n`;
+                    md += `| Date | Moment | Meditation | Stretch/Walk | Rooting |\n|---|---|---|---|---|\n`;
+                    dates.forEach(date => {
+                        const l = pbLogs[date];
+                        const dateStr = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                        md += `| ${dateStr} | ${l.moment ? '☑️' : '❌'} | ${l.meditation ? '☑️' : '❌'} | ${l.stretch ? '☑️' : '❌'} | ${l.rooting ? '☑️' : '❌'} |\n`;
+                    });
+                    return md;
+                }
+            };
+
+            const downloadFile = (content, filename, type = 'text/markdown') => {
+                const blob = new Blob([content], { type });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+            };
+
+            const handleBackup = () => {
+                const backup = { dailyLogs, pbLogs, date: new Date().toISOString() };
+                downloadFile(JSON.stringify(backup, null, 2), `habits_backup_${new Date().toISOString().slice(0,10)}.json`, 'application/json');
+            };
+
+            const handleRestore = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.dailyLogs) setDailyLogs(data.dailyLogs);
+                        if (data.pbLogs) setPbLogs(data.pbLogs);
+                        alert('Data imported successfully!');
+                        setShowExportModal(false);
+                    } catch (err) { alert('Invalid backup file'); }
+                };
+                reader.readAsText(file);
+            };
+
+            // --- DASHBOARD SCREEN ---
+            const ReviewScreen = () => (
+                <div className="fixed inset-0 bg-stone-50 z-50 overflow-y-auto animate-fade-in">
+                    <div className="max-w-4xl mx-auto p-4 md:p-8">
+                        {/* Header */}
+                        <div className="flex justify-between items-center mb-8 bg-white p-4 rounded-3xl shadow-sm border border-stone-200">
+                            <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-3">
+                                <span className="bg-brand-periwinkle/20 text-brand-periwinkle p-2 rounded-xl"><Icons.Chart /></span>
+                                Monthly Dashboard
+                            </h2>
+                            <div className="flex items-center gap-4">
+                                <input 
+                                    type="month" 
+                                    value={reviewMonth}
+                                    onChange={(e) => setReviewMonth(e.target.value)}
+                                    className="bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-bold text-stone-600 outline-none"
+                                />
+                                <button onClick={() => setShowReview(false)} className="bg-stone-200 hover:bg-stone-300 p-2 rounded-full transition-colors text-stone-500"><Icons.X /></button>
+                            </div>
+                        </div>
+
+                        {/* ROW 1: Ritual Completion (Stacked Bars) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
+                                <h3 className="text-lg font-bold text-stone-800 mb-6 flex items-center gap-2"><Icons.Sun /> Morning Rituals</h3>
+                                <StackedBar 
+                                    label="Completion"
+                                    early={reviewStats.mr.early}
+                                    late={reviewStats.mr.late}
+                                    totalDays={reviewStats.totalDays}
+                                    gradientEarly="bg-gradient-to-r from-brand-yellow to-brand-orange"
+                                    gradientLate="bg-gradient-to-r from-brand-yellow/40 to-brand-orange/40"
+                                />
+                                <div className="mt-6 pt-4 border-t border-stone-100">
+                                    <div className="text-xs font-bold text-stone-400 uppercase mb-1">Avg Workday Start</div>
+                                    <div className="text-3xl font-extrabold text-stone-800">{reviewStats.avgWorkdayStr}</div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
+                                <h3 className="text-lg font-bold text-stone-800 mb-6 flex items-center gap-2"><Icons.Moon /> Shutdown Rituals</h3>
+                                <StackedBar 
+                                    label="Completion"
+                                    early={reviewStats.sdr.early}
+                                    late={reviewStats.sdr.late}
+                                    totalDays={reviewStats.totalDays}
+                                    gradientEarly="bg-gradient-to-r from-brand-periwinkle to-brand-purple"
+                                    gradientLate="bg-gradient-to-r from-brand-periwinkle/40 to-brand-purple/40"
+                                />
+                            </div>
+                        </div>
+
+                        {/* ROW 2: Sleep Hygiene (Progress Bars) */}
+                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-100 mb-8">
+                            <h3 className="text-lg font-bold text-stone-800 mb-6 uppercase tracking-wider text-sm">Sleep Hygiene</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
+                                <ProgressBar 
+                                    label="Lights Off" 
+                                    value={reviewStats.sleep.lights} 
+                                    max={reviewStats.totalDays} 
+                                    gradient="bg-gradient-to-r from-brand-yellow to-brand-orange"
+                                    subLabel={`${reviewStats.sleep.lights}/${reviewStats.totalDays}`}
+                                />
+                                <ProgressBar 
+                                    label="No TV / Soundscapes" 
+                                    value={reviewStats.sleep.tv} 
+                                    max={reviewStats.totalDays} 
+                                    gradient="bg-gradient-to-r from-brand-periwinkle to-brand-teal"
+                                    subLabel={`${reviewStats.sleep.tv}/${reviewStats.totalDays}`}
+                                />
+                                <ProgressBar 
+                                    label="No Late Snacks" 
+                                    value={reviewStats.sleep.lsib} 
+                                    max={reviewStats.totalDays} 
+                                    gradient="bg-gradient-to-r from-brand-mint to-brand-teal"
+                                    subLabel={`${reviewStats.sleep.lsib}/${reviewStats.totalDays}`}
+                                />
+                                <ProgressBar 
+                                    label="Bedtime < Midnight" 
+                                    value={reviewStats.sleep.bed} 
+                                    max={reviewStats.totalDays} 
+                                    gradient="bg-gradient-to-r from-brand-periwinkle to-brand-purple"
+                                    subLabel={`${reviewStats.sleep.bed}/${reviewStats.totalDays}`}
+                                />
+                            </div>
+                        </div>
+
+                        {/* ROW 3: PB Habits */}
+                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-100">
+                            <h3 className="text-lg font-bold text-stone-800 mb-6 uppercase tracking-wider text-sm">Personal Breakthrough</h3>
+                            <div className="space-y-4">
+                                <ProgressBar 
+                                    label="Morning Moment" 
+                                    value={reviewStats.pb.moment} 
+                                    max={reviewStats.totalDays} 
+                                    gradient="bg-gradient-to-r from-brand-yellow to-brand-orange"
+                                    subLabel={`${reviewStats.pb.moment}/${reviewStats.totalDays}`}
+                                />
+                                <ProgressBar 
+                                    label="Meditation" 
+                                    value={reviewStats.pb.meditation} 
+                                    max={reviewStats.totalDays} 
+                                    gradient="bg-gradient-to-r from-brand-salmon to-brand-pink"
+                                    subLabel={`${reviewStats.pb.meditation}/${reviewStats.totalDays}`}
+                                />
+                                <ProgressBar 
+                                    label="Stretch / Walk" 
+                                    value={reviewStats.pb.stretch} 
+                                    max={reviewStats.totalDays} 
+                                    gradient="bg-gradient-to-r from-brand-mint to-brand-teal"
+                                    subLabel={`${reviewStats.pb.stretch}/${reviewStats.totalDays}`}
+                                />
+                                <ProgressBar 
+                                    label="Rooting" 
+                                    value={reviewStats.pb.rooting} 
+                                    max={reviewStats.totalDays} 
+                                    gradient="bg-gradient-to-r from-brand-purple to-brand-periwinkle"
+                                    subLabel={`${reviewStats.pb.rooting}/${reviewStats.totalDays}`}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            if (showReview) return <ReviewScreen />;
+
+            // --- MAIN APP SCREEN ---
+            return (
+                <div className={`min-h-screen ${theme.bg} p-4 md:p-8 transition-colors duration-500`}>
+                    <div className="max-w-4xl mx-auto">
+                        
+                        {/* Header */}
+                        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                            <h1 className="text-3xl font-extrabold text-stone-800 flex items-center gap-3">
+                                <span className={`bg-gradient-to-r ${theme.accent} text-white p-2 rounded-lg shadow-md`}>
+                                    <Icons.Activity />
+                                </span>
+                                Habits & PB Tracker
+                            </h1>
+                            <div className="flex gap-3">
+                                <button onClick={() => setShowReview(true)} className="bg-white/80 hover:bg-white text-stone-700 font-bold py-3 px-5 rounded-xl shadow-sm border border-stone-200 flex items-center gap-2 transition-all">
+                                    <Icons.Chart /> <span className="hidden md:inline">Monthly Dashboard</span>
+                                </button>
+                                <button onClick={() => setShowExportModal(true)} className="bg-white hover:bg-stone-50 text-stone-700 font-bold py-3 px-5 rounded-xl shadow-sm border-2 border-stone-200 flex items-center gap-2 transition-all">
+                                    <Icons.Download />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Date Navigation */}
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border-2 border-white/50 mb-6 flex flex-col md:flex-row items-center justify-between gap-4 glass">
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => shiftDate(-1)} className="p-2 hover:bg-stone-100 rounded-lg"><Icons.ChevronLeft /></button>
+                                <div className="flex flex-col items-center mx-4">
+                                    <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">Selected Date</span>
+                                    <input 
+                                        type="date" 
+                                        value={selectedDate} 
+                                        onChange={(e) => setSelectedDate(e.target.value)}
+                                        className="text-lg font-bold text-stone-800 bg-transparent outline-none cursor-pointer text-center"
+                                    />
+                                    <span className="text-sm font-medium text-stone-500">{displayDate}</span>
+                                </div>
+                                <button onClick={() => shiftDate(1)} className="p-2 hover:bg-stone-100 rounded-lg"><Icons.ChevronRight /></button>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 bg-stone-100 p-1 rounded-xl">
+                                <button onClick={() => { setSelectedDate(new Date().toISOString().split('T')[0]); }} className="px-4 py-2 rounded-lg text-sm font-bold text-stone-600 hover:bg-white hover:shadow-sm transition-all">Today</button>
+                                <button onClick={() => { const d = new Date(); d.setDate(d.getDate() - 1); setSelectedDate(d.toISOString().split('T')[0]); }} className="px-4 py-2 rounded-lg text-sm font-bold text-stone-600 hover:bg-white hover:shadow-sm transition-all">Yesterday</button>
+                            </div>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex gap-4 mb-6">
+                            <button 
+                                onClick={() => setActiveTab('daily')} 
+                                className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${activeTab === 'daily' ? 'bg-gradient-to-r from-brand-orange to-brand-salmon text-white shadow-lg shadow-brand-orange/20 transform scale-[1.02]' : 'bg-white text-stone-500 hover:bg-stone-50'}`}
+                            >
+                                Daily Habits
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('pb')} 
+                                className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${activeTab === 'pb' ? 'bg-gradient-to-r from-brand-periwinkle to-brand-purple text-white shadow-lg shadow-brand-periwinkle/20 transform scale-[1.02]' : 'bg-white text-stone-500 hover:bg-stone-50'}`}
+                            >
+                                Personal Breakthrough
+                            </button>
+                        </div>
+
+                        {/* --- DAILY HABITS TAB --- */}
+                        {activeTab === 'daily' && (
+                            <div className="grid md:grid-cols-2 gap-6 animate-fade-in">
+                                {/* Morning Section */}
+                                <div className="glass p-6 rounded-3xl border border-white/60 shadow-xl">
+                                    <h3 className="text-xl font-bold text-brand-orange mb-6 flex items-center gap-2">
+                                        <Icons.Sun /> Morning
+                                    </h3>
+
+                                    {/* Workday */}
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-bold text-stone-500 mb-2 uppercase">Workday Start</label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="time" 
+                                                value={currentDaily.workday} 
+                                                disabled={currentDaily.isWeekend}
+                                                onChange={(e) => updateDaily({ workday: e.target.value })}
+                                                className={`flex-1 p-3 rounded-xl border-2 font-bold text-lg outline-none focus:border-brand-orange ${currentDaily.isWeekend ? 'bg-stone-100 text-stone-400' : 'bg-white text-stone-800'}`}
+                                            />
+                                            <button 
+                                                onClick={() => updateDaily({ isWeekend: !currentDaily.isWeekend, workday: '' })}
+                                                className={`px-4 rounded-xl font-bold border-2 transition-colors ${currentDaily.isWeekend ? 'bg-stone-600 text-white border-stone-600' : 'bg-white text-stone-400 border-stone-200'}`}
+                                            >
+                                                N/A
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* MR */}
+                                    <div className="space-y-3 mb-6">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-sm font-bold text-stone-500 uppercase">Morning Ritual (MR)</label>
+                                            {currentDaily.mr.early && <span className="text-xs bg-brand-yellow/30 text-stone-700 px-2 py-1 rounded-full font-bold">🌞 Early Bird</span>}
+                                        </div>
+                                        <Toggle 
+                                            label="MR Completed" 
+                                            checked={currentDaily.mr.done} 
+                                            onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, done: val } })} 
+                                            activeClass="bg-gradient-to-r from-brand-orange to-brand-salmon text-white border-brand-orange"
+                                        />
+                                        {currentDaily.mr.done && (
+                                            <div className="pl-4 border-l-2 border-brand-orange/30 space-y-3 slide-up">
+                                                <Toggle 
+                                                    label="Before 10:00 AM?" 
+                                                    checked={currentDaily.mr.early} 
+                                                    onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, early: val } })} 
+                                                    activeClass="bg-brand-yellow text-stone-800 border-brand-yellow"
+                                                    icon="🌞"
+                                                />
+                                                <NumberInput 
+                                                    label="Activities Count" 
+                                                    value={currentDaily.mr.count} 
+                                                    max={14} 
+                                                    onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, count: val } })} 
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Evening Section */}
+                                <div className="glass p-6 rounded-3xl border border-white/60 shadow-xl">
+                                    <h3 className="text-xl font-bold text-brand-purple mb-6 flex items-center gap-2">
+                                        <Icons.Moon /> Evening
+                                    </h3>
+
+                                    {/* SDR */}
+                                    <div className="space-y-3 mb-8">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-sm font-bold text-stone-500 uppercase">Shutdown Ritual (SDR)</label>
+                                            {currentDaily.sdr.early && <span className="text-xs bg-brand-periwinkle/30 text-stone-700 px-2 py-1 rounded-full font-bold">🌙 Early</span>}
+                                        </div>
+                                        <Toggle 
+                                            label="SDR Completed" 
+                                            checked={currentDaily.sdr.done} 
+                                            onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, done: val } })} 
+                                            activeClass="bg-gradient-to-r from-brand-periwinkle to-brand-purple text-white border-brand-purple"
+                                        />
+                                        {currentDaily.sdr.done && (
+                                            <div className="pl-4 border-l-2 border-brand-purple/30 space-y-3 slide-up">
+                                                <Toggle 
+                                                    label="Before 10:00 PM?" 
+                                                    checked={currentDaily.sdr.early} 
+                                                    onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, early: val } })} 
+                                                    activeClass="bg-brand-periwinkle text-white border-brand-periwinkle"
+                                                    icon="🌙"
+                                                />
+                                                <NumberInput 
+                                                    label="Activities Count" 
+                                                    value={currentDaily.sdr.count} 
+                                                    max={9} 
+                                                    onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, count: val } })} 
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Sleep Hygiene */}
+                                    <div className="space-y-3">
+                                        <label className="text-sm font-bold text-stone-500 uppercase">Sleep Hygiene</label>
+                                        <Toggle 
+                                            label="Sleep Lights Off" 
+                                            checked={currentDaily.sleep.lights} 
+                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, lights: val } })} 
+                                            activeClass="bg-brand-yellow text-stone-800 border-brand-yellow"
+                                            icon="💡"
+                                        />
+                                        <Toggle 
+                                            label="No TV / Soundscapes" 
+                                            checked={currentDaily.sleep.tv} 
+                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, tv: val } })} 
+                                            activeClass="bg-brand-periwinkle text-white border-brand-periwinkle"
+                                            icon="📺"
+                                        />
+                                        <Toggle 
+                                            label="No Late Snacks" 
+                                            checked={currentDaily.sleep.noLSIB} 
+                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, noLSIB: val } })} 
+                                            activeClass="bg-brand-mint text-white border-brand-mint"
+                                            icon="💪"
+                                        />
+                                        <Toggle 
+                                            label="Bedtime < Midnight" 
+                                            checked={currentDaily.sleep.bedtime} 
+                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, bedtime: val } })} 
+                                            activeClass="bg-brand-purple text-white border-brand-purple"
+                                            icon="🌚"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* EXPORT MODAL */}
+                        <Modal isOpen={showExportModal} onClose={() => setShowExportModal(false)} title="Export & Backup">
+                            <div className="space-y-6">
+                                <div>
+                                    <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><Icons.Download /> Download Markdown Table</h4>
+                                    <div className="bg-gray-50 p-4 rounded-xl space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-sm font-bold text-gray-500">For Month:</span>
+                                            <input type="month" value={exportMonth} onChange={(e) => setExportMonth(e.target.value)} className="bg-white border rounded-lg px-3 py-1 font-medium" />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button onClick={() => downloadFile(generateMarkdown('daily'), `daily_habits_${exportMonth}.md`)} className="bg-brand-orange text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-colors">Daily Habits</button>
+                                            <button onClick={() => downloadFile(generateMarkdown('pb'), `pb_tracker_${exportMonth}.md`)} className="bg-brand-purple text-white py-3 rounded-xl font-bold hover:bg-purple-700 transition-colors">PB Tracker</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="border-t pt-6">
+                                    <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><Icons.Upload /> Full Data Backup</h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button onClick={handleBackup} className="border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-bold hover:bg-stone-50">Download Backup (.json)</button>
+                                        <label className="border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-bold hover:bg-stone-50 cursor-pointer text-center">
+                                            Restore Backup
+                                            <input type="file" className="hidden" accept=".json" onChange={handleRestore} />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </Modal>
+
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
