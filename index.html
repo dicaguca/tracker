@@ -990,7 +990,7 @@
                                             label="MR Completed" 
                                             checked={currentDaily.mr.done} 
                                             onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, done: val } })} 
-                                            activeClass="bg-gradient-to-r from-brand-orange to-brand-salmon text-white border-brand-orange"
+                                            activeClass="border-brand-orange"
                                         />
                                         {currentDaily.mr.done && (
                                             <div className="pl-4 border-l-2 border-brand-orange/30 space-y-3 slide-up">
@@ -998,7 +998,7 @@
                                                     label="Before 10:00 AM?" 
                                                     checked={currentDaily.mr.early} 
                                                     onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, early: val } })} 
-                                                    activeClass="bg-brand-yellow text-stone-800 border-brand-yellow"
+                                                    activeClass="border-brand-yellow"
                                                     icon="🌞"
                                                 />
                                                 <NumberInput 
@@ -1028,7 +1028,7 @@
                                             label="SDR Completed" 
                                             checked={currentDaily.sdr.done} 
                                             onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, done: val } })} 
-                                            activeClass="bg-gradient-to-r from-brand-periwinkle to-brand-purple text-white border-brand-purple"
+                                            activeClass="border-brand-purple"
                                         />
                                         {currentDaily.sdr.done && (
                                             <div className="pl-4 border-l-2 border-brand-purple/30 space-y-3 slide-up">
@@ -1036,7 +1036,7 @@
                                                     label="Before 10:30 PM?" 
                                                     checked={currentDaily.sdr.early} 
                                                     onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, early: val } })} 
-                                                    activeClass="bg-brand-periwinkle text-white border-brand-periwinkle"
+                                                    activeClass="border-brand-periwinkle"
                                                     icon="🌙"
                                                 />
                                                 <NumberInput 
@@ -1056,28 +1056,28 @@
                                             label="Sleep Lights Off" 
                                             checked={currentDaily.sleep.lights} 
                                             onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, lights: val } })} 
-                                            activeClass="bg-brand-yellow text-stone-800 border-brand-yellow"
+                                            activeClass="border-brand-yellow"
                                             icon="💡"
                                         />
                                         <Toggle 
                                             label="No TV / Soundscapes" 
                                             checked={currentDaily.sleep.tv} 
                                             onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, tv: val } })} 
-                                            activeClass="bg-brand-periwinkle text-white border-brand-periwinkle"
+                                            activeClass="border-brand-blue"
                                             icon="📺"
                                         />
                                         <Toggle 
                                             label="No Late Snacks" 
                                             checked={currentDaily.sleep.noLSIB} 
                                             onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, noLSIB: val } })} 
-                                            activeClass="bg-brand-mint text-white border-brand-mint"
+                                            activeClass="border-brand-mint"
                                             icon="💪"
                                         />
                                         <Toggle 
                                             label="Bedtime < Midnight" 
                                             checked={currentDaily.sleep.bedtime} 
                                             onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, bedtime: val } })} 
-                                            activeClass="bg-brand-purple text-white border-brand-purple"
+                                            activeClass="border-brand-purple"
                                             icon="🌚"
                                         />
                                     </div>
@@ -1096,28 +1096,28 @@
                                         label="Morning Moment" 
                                         checked={currentPB.moment} 
                                         onChange={(val) => updatePB({ moment: val })} 
-                                        activeClass="bg-gradient-to-r from-brand-yellow to-brand-orange text-white border-brand-yellow"
+                                        activeClass="border-brand-yellow"
                                         icon="✨"
                                     />
                                     <Toggle 
                                         label="Meditation" 
                                         checked={currentPB.meditation} 
                                         onChange={(val) => updatePB({ meditation: val })} 
-                                        activeClass="bg-gradient-to-r from-brand-salmon to-brand-pink text-white border-brand-salmon"
+                                        activeClass="border-brand-pink"
                                         icon="🧘‍♀️"
                                     />
                                     <Toggle 
                                         label="Stretch / Walk" 
                                         checked={currentPB.stretch} 
                                         onChange={(val) => updatePB({ stretch: val })} 
-                                        activeClass="bg-gradient-to-r from-brand-mint to-brand-teal text-white border-brand-mint"
+                                        activeClass="border-brand-teal"
                                         icon="🏃‍♀️"
                                     />
                                     <Toggle 
                                         label="Rooting" 
                                         checked={currentPB.rooting} 
                                         onChange={(val) => updatePB({ rooting: val })} 
-                                        activeClass="bg-gradient-to-r from-brand-purple to-brand-periwinkle text-white border-brand-purple"
+                                        activeClass="border-brand-purple"
                                         icon="🌳"
                                     />
                                 </div>
