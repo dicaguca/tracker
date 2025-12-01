@@ -21,7 +21,7 @@
                         'brand-mint': '#30d09a',
                         'brand-teal': '#17bba4',
                         'brand-periwinkle': '#8e9fe7',
-                        'brand-blue': '#89acde', /* NEW COLOR FOR TV */
+                        'brand-blue': '#89acde',
                         'brand-purple': '#a791f2',
                         'brand-yellow': '#ffdd65',
                         'brand-orange': '#faa52e',
@@ -129,7 +129,7 @@
             );
         };
 
-        const SimpleBarChart = ({ data, color, title, height = "h-48" }) => {
+        const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%" }) => {
             const max = Math.max(...data.map(d => d.value), 1);
             return (
                 <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm mb-6">
@@ -137,10 +137,10 @@
                     <div className={`flex items-end gap-3 ${height} mb-4`}>
                         {data.map((d, i) => (
                             <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2 group h-full">
-                                <div className="text-sm font-bold text-stone-600">{d.value}%</div>
+                                <div className="text-sm font-bold text-stone-600">{d.value}{valueSuffix}</div>
                                 <div 
                                     className={`w-full rounded-t-lg transition-all duration-500 ${color}`}
-                                    style={{ height: `${d.value}%` }}
+                                    style={{ height: `${(d.value / max) * 100}%` }}
                                 ></div>
                             </div>
                         ))}
@@ -290,12 +290,22 @@
                     const totalPbDays = pbDates.length || 1;
                     
                     let mrCount = 0, mrEarlyCount = 0, sdrCount = 0, sdrEarlyCount = 0;
+                    let mrTotalActs = 0, sdrTotalActs = 0; // for average calculation
+                    
                     let lightsCount = 0, tvCount = 0, lsibCount = 0, bedCount = 0;
                     
                     dailyDates.forEach(d => {
                         const log = dailyLogs[d];
-                        if (log?.mr?.done) { mrCount++; if (log.mr.early) mrEarlyCount++; }
-                        if (log?.sdr?.done) { sdrCount++; if (log.sdr.early) sdrEarlyCount++; }
+                        if (log?.mr?.done) { 
+                            mrCount++; 
+                            if (log.mr.early) mrEarlyCount++; 
+                            mrTotalActs += (log.mr.count || 0);
+                        }
+                        if (log?.sdr?.done) { 
+                            sdrCount++; 
+                            if (log.sdr.early) sdrEarlyCount++; 
+                            sdrTotalActs += (log.sdr.count || 0);
+                        }
                         if (log?.sleep?.lights) lightsCount++;
                         if (log?.sleep?.tv) tvCount++;
                         if (log?.sleep?.noLSIB) lsibCount++;
@@ -317,8 +327,10 @@
                         label: shortMonth,
                         mr: Math.round((mrCount / totalDailyDays) * 100),
                         mrEarly: Math.round((mrEarlyCount / totalDailyDays) * 100),
+                        mrAvg: Math.round(mrTotalActs / totalDailyDays), // Average MR Activities per day
                         sdr: Math.round((sdrCount / totalDailyDays) * 100),
                         sdrEarly: Math.round((sdrEarlyCount / totalDailyDays) * 100),
+                        sdrAvg: Math.round(sdrTotalActs / totalDailyDays), // Average SDR Activities per day
                         lights: Math.round((lightsCount / totalDailyDays) * 100),
                         tv: Math.round((tvCount / totalDailyDays) * 100),
                         lsib: Math.round((lsibCount / totalDailyDays) * 100),
@@ -480,7 +492,7 @@
                     setCurrentWeekStart(newStart);
                 };
 
-                const WeeklyRow = ({ label, dates, logs, checkFn, colorClass, emptyClass = "bg-stone-100 border-stone-200", isRitual = false }) => (
+                const WeeklyRow = ({ label, dates, logs, checkFn, colorClass, emptyClass = "bg-stone-100 border-stone-200", isRitual = false, dataKey = "" }) => (
                     <div className="flex items-center justify-between py-4 border-b border-stone-100 last:border-0">
                         <span className="font-bold text-stone-600 text-sm w-32 md:w-48 truncate pr-2">{label}</span>
                         <div className="flex gap-1 md:gap-3 flex-1 justify-between max-w-md">
@@ -493,13 +505,19 @@
                                 // false = not done
                                 
                                 let boxClass = emptyClass;
-                                
+                                let content = null;
+
                                 if (isRitual) {
+                                    // Extract count if available
+                                    const count = (log[dataKey] && log[dataKey].count) || 0;
+                                    
                                     // For Rituals: Early = Solid, Late = Faded/Light Fill
                                     if (status === 'early') {
                                         boxClass = `bg-${colorClass} border-${colorClass}`;
+                                        if(count > 0) content = <span className="text-white font-bold text-xs">{count}</span>;
                                     } else if (status === true) {
                                         boxClass = `bg-${colorClass}/40 border-${colorClass}`; 
+                                        if(count > 0) content = <span className={`text-${colorClass} font-bold text-xs brightness-50`}>{count}</span>;
                                     }
                                 } else {
                                     // For Standard (Booleans): Done = Solid
@@ -514,7 +532,7 @@
                                             className={`w-8 h-8 md:w-10 md:h-10 rounded-lg border-2 transition-all flex items-center justify-center ${boxClass} ${status ? 'shadow-sm' : ''}`}
                                             title={date}
                                         >
-                                            {/* Optional checkmark */}
+                                            {content}
                                         </div>
                                     </div>
                                 )
@@ -573,8 +591,8 @@
                             <div className="bg-white px-6 pb-6 rounded-b-3xl shadow-sm border border-stone-100 space-y-1">
                                 {weeklyTab === 'daily' ? (
                                     <>
-                                        <WeeklyRow label="Morning Ritual" dates={weekDates} logs={dailyLogs} isRitual={true} checkFn={l => l.mr?.done ? (l.mr.early ? 'early' : true) : false} colorClass="brand-orange" />
-                                        <WeeklyRow label="Shutdown Ritual" dates={weekDates} logs={dailyLogs} isRitual={true} checkFn={l => l.sdr?.done ? (l.sdr.early ? 'early' : true) : false} colorClass="brand-purple" />
+                                        <WeeklyRow label="Morning Ritual" dates={weekDates} logs={dailyLogs} isRitual={true} dataKey="mr" checkFn={l => l.mr?.done ? (l.mr.early ? 'early' : true) : false} colorClass="brand-orange" />
+                                        <WeeklyRow label="Shutdown Ritual" dates={weekDates} logs={dailyLogs} isRitual={true} dataKey="sdr" checkFn={l => l.sdr?.done ? (l.sdr.early ? 'early' : true) : false} colorClass="brand-purple" />
                                         <WeeklyRow label="Sleep Lights Off" dates={weekDates} logs={dailyLogs} checkFn={l => l.sleep?.lights} colorClass="brand-yellow" />
                                         <WeeklyRow label="No TV / Sound" dates={weekDates} logs={dailyLogs} checkFn={l => l.sleep?.tv} colorClass="brand-blue" />
                                         <WeeklyRow label="No Late Snacks" dates={weekDates} logs={dailyLogs} checkFn={l => l.sleep?.noLSIB} colorClass="brand-mint" />
@@ -591,7 +609,7 @@
                             </div>
                             
                             <div className="mt-6 text-center text-stone-400 text-xs font-bold uppercase tracking-widest">
-                                Tip: Faded boxes indicate "Late" completion for Rituals.
+                                Tip: Faded boxes indicate "Late" completion. Numbers indicate # of activities.
                             </div>
 
                         </div>
@@ -629,47 +647,71 @@
 
                         {/* Daily Habits Trends */}
                         {trendsTab === 'daily' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <SimpleBarChart 
-                                    title="Morning Ritual Completion" 
-                                    data={trends.map(t => ({ label: t.label, value: t.mr }))} 
-                                    color="bg-gradient-to-r from-brand-orange to-brand-salmon" 
-                                />
-                                <SimpleBarChart 
-                                    title="Morning Ritual (Early)" 
-                                    data={trends.map(t => ({ label: t.label, value: t.mrEarly }))} 
-                                    color="bg-brand-yellow" 
-                                />
-                                <SimpleBarChart 
-                                    title="Shutdown Ritual Completion" 
-                                    data={trends.map(t => ({ label: t.label, value: t.sdr }))} 
-                                    color="bg-gradient-to-r from-brand-periwinkle to-brand-purple" 
-                                />
-                                <SimpleBarChart 
-                                    title="Shutdown Ritual (Early)" 
-                                    data={trends.map(t => ({ label: t.label, value: t.sdrEarly }))} 
-                                    color="bg-brand-periwinkle" 
-                                />
-                                <SimpleBarChart 
-                                    title="Sleep Lights Off" 
-                                    data={trends.map(t => ({ label: t.label, value: t.lights }))} 
-                                    color="bg-brand-yellow" 
-                                />
-                                <SimpleBarChart 
-                                    title="No TV / Soundscapes" 
-                                    data={trends.map(t => ({ label: t.label, value: t.tv }))} 
-                                    color="bg-brand-blue" 
-                                />
-                                <SimpleBarChart 
-                                    title="No Late Snacks" 
-                                    data={trends.map(t => ({ label: t.label, value: t.lsib }))} 
-                                    color="bg-gradient-to-r from-brand-mint to-brand-teal" 
-                                />
-                                <SimpleBarChart 
-                                    title="Bedtime < Midnight" 
-                                    data={trends.map(t => ({ label: t.label, value: t.bedtime }))} 
-                                    color="bg-brand-purple" 
-                                />
+                            <div className="space-y-8">
+                                {/* Rituals & Activities Section */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <SimpleBarChart 
+                                        title="Morning Ritual Completion" 
+                                        data={trends.map(t => ({ label: t.label, value: t.mr }))} 
+                                        color="bg-gradient-to-r from-brand-orange to-brand-salmon" 
+                                    />
+                                    <SimpleBarChart 
+                                        title="Morning Ritual (Early)" 
+                                        data={trends.map(t => ({ label: t.label, value: t.mrEarly }))} 
+                                        color="bg-brand-yellow" 
+                                    />
+                                    <SimpleBarChart 
+                                        title="Avg MR Activities" 
+                                        data={trends.map(t => ({ label: t.label, value: t.mrAvg }))} 
+                                        color="bg-brand-orange"
+                                        valueSuffix=""
+                                    />
+                                    <div className="hidden md:block"></div> {/* Spacer */}
+
+                                    <SimpleBarChart 
+                                        title="Shutdown Ritual Completion" 
+                                        data={trends.map(t => ({ label: t.label, value: t.sdr }))} 
+                                        color="bg-gradient-to-r from-brand-periwinkle to-brand-purple" 
+                                    />
+                                    <SimpleBarChart 
+                                        title="Shutdown Ritual (Early)" 
+                                        data={trends.map(t => ({ label: t.label, value: t.sdrEarly }))} 
+                                        color="bg-brand-periwinkle" 
+                                    />
+                                    <SimpleBarChart 
+                                        title="Avg SDR Activities" 
+                                        data={trends.map(t => ({ label: t.label, value: t.sdrAvg }))} 
+                                        color="bg-brand-purple"
+                                        valueSuffix=""
+                                    />
+                                </div>
+
+                                {/* Sleep Hygiene Section */}
+                                <div>
+                                    <h3 className="text-xl font-extrabold text-stone-400 uppercase tracking-widest mb-6 border-b border-stone-200 pb-2">Sleep Hygiene</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <SimpleBarChart 
+                                            title="Sleep Lights Off" 
+                                            data={trends.map(t => ({ label: t.label, value: t.lights }))} 
+                                            color="bg-brand-yellow" 
+                                        />
+                                        <SimpleBarChart 
+                                            title="No TV / Soundscapes" 
+                                            data={trends.map(t => ({ label: t.label, value: t.tv }))} 
+                                            color="bg-brand-blue" 
+                                        />
+                                        <SimpleBarChart 
+                                            title="No Late Snacks" 
+                                            data={trends.map(t => ({ label: t.label, value: t.lsib }))} 
+                                            color="bg-gradient-to-r from-brand-mint to-brand-teal" 
+                                        />
+                                        <SimpleBarChart 
+                                            title="Bedtime < Midnight" 
+                                            data={trends.map(t => ({ label: t.label, value: t.bedtime }))} 
+                                            color="bg-brand-purple" 
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -1039,45 +1081,6 @@
                                             icon="🌚"
                                         />
                                     </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* --- PERSONAL BREAKTHROUGH TAB --- */}
-                        {activeTab === 'pb' && (
-                            <div className="glass p-6 rounded-3xl border border-white/60 shadow-xl animate-fade-in max-w-2xl mx-auto">
-                                <h3 className="text-xl font-bold text-brand-periwinkle mb-6 flex items-center gap-2">
-                                    <Icons.Sparkles /> Daily Practices
-                                </h3>
-                                <div className="space-y-4">
-                                    <Toggle 
-                                        label="Morning Moment" 
-                                        checked={currentPB.moment} 
-                                        onChange={(val) => updatePB({ moment: val })} 
-                                        activeClass="bg-gradient-to-r from-brand-yellow to-brand-orange text-white border-brand-yellow"
-                                        icon="✨"
-                                    />
-                                    <Toggle 
-                                        label="Meditation" 
-                                        checked={currentPB.meditation} 
-                                        onChange={(val) => updatePB({ meditation: val })} 
-                                        activeClass="bg-gradient-to-r from-brand-salmon to-brand-pink text-white border-brand-salmon"
-                                        icon="🧘‍♀️"
-                                    />
-                                    <Toggle 
-                                        label="Stretch / Walk" 
-                                        checked={currentPB.stretch} 
-                                        onChange={(val) => updatePB({ stretch: val })} 
-                                        activeClass="bg-gradient-to-r from-brand-mint to-brand-teal text-white border-brand-mint"
-                                        icon="🏃‍♀️"
-                                    />
-                                    <Toggle 
-                                        label="Rooting" 
-                                        checked={currentPB.rooting} 
-                                        onChange={(val) => updatePB({ rooting: val })} 
-                                        activeClass="bg-gradient-to-r from-brand-purple to-brand-periwinkle text-white border-brand-purple"
-                                        icon="🌳"
-                                    />
                                 </div>
                             </div>
                         )}
