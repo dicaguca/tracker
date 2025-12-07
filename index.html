@@ -263,10 +263,16 @@
             };
 
             const shiftDate = (days) => {
-                const d = new Date(selectedDate);
+                // Safely construct date from YYYY-MM-DD components to avoid timezone related day shifts
+                const parts = selectedDate.split('-').map(Number);
+                const d = new Date(parts[0], parts[1] - 1, parts[2]); // YYYY, M-1, D
+                
+                // Apply the shift
                 d.setDate(d.getDate() + days);
+                
                 setSelectedDate(getLocalDateString(d));
             };
+            
             // Parse date in local timezone to avoid UTC conversion issues
             const [year, month, day] = selectedDate.split('-').map(Number);
             const displayDate = new Date(year, month - 1, day).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
