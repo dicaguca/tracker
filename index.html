@@ -129,33 +129,40 @@
             );
         };
 
-        const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%", chartMax = 100 }) => {
-            // Use chartMax for consistent scaling across charts
-            const max = chartMax;
-            return (
-                <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm mb-6">
-                    <h4 className="font-bold text-stone-800 mb-12 text-sm uppercase tracking-wide">{title}</h4>
-                    <div className={`flex items-end gap-3 ${height} mb-4`}>
-                        {data.map((d, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center justify-end gap-2 group h-full">
-                                <div className="text-sm font-bold text-stone-600">{d.value}{valueSuffix}</div>
-                                <div 
-                                    className={`w-full rounded-t-lg transition-all duration-500 ${color}`}
-                                    style={{ height: `${(d.value / max) * 100}%` }}
-                                ></div>
-                            </div>
-                        ))}
+const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%", chartMax = 100 }) => {
+    // Use chartMax for consistent scaling across charts
+    const max = chartMax;
+    return (
+        <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm mb-6">
+            <h4 className="font-bold text-stone-800 mb-12 text-sm uppercase tracking-wide">{title}</h4>
+            <div className={`flex items-end gap-3 ${height} mb-4`}>
+                {data.map((d, i) => (
+                    // 1. Bar Wrapper: Set to h-full (100% height) and relative for positioning the label.
+                    <div key={i} className="flex-1 flex flex-col items-center justify-end h-full relative">
+                        {/* 2. Label: Positioned absolutely. 'bottom-full' places it directly above the bar, 
+                                    and 'mb-1' adds a small 1-unit margin/gap. 
+                                    This element no longer takes up vertical space within the h-full container. */}
+                        <div className="absolute bottom-full mb-1 text-sm font-bold text-stone-600">
+                            {d.value}{valueSuffix}
+                        </div>
+                        {/* 3. The Bar: Can now correctly use 100% of the space when the value is at max. */}
+                        <div 
+                            className={`w-full rounded-t-lg transition-all duration-500 ${color}`}
+                            style={{ height: `${(d.value / max) * 100}%` }}
+                        ></div>
                     </div>
-                    <div className="flex items-center gap-3 mt-2">
-                        {data.map((d, i) => (
-                            <div key={i} className="flex-1 text-center">
-                                <div className="text-xs font-bold text-stone-500">{d.label}</div>
-                            </div>
-                        ))}
+                ))}
+            </div>
+            <div className="flex items-center gap-3 mt-2">
+                {data.map((d, i) => (
+                    <div key={i} className="flex-1 text-center">
+                        <div className="text-xs font-bold text-stone-500">{d.label}</div>
                     </div>
-                </div>
-            );
-        };
+                ))}
+            </div>
+        </div>
+    );
+};
 
         const Toggle = ({ label, checked, onChange, icon, activeClass }) => (
             <div onClick={() => onChange(!checked)} className={`cursor-pointer select-none p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between ${checked ? `bg-white ${activeClass} shadow-sm` : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
@@ -1185,3 +1192,4 @@
     </script>
 </body>
 </html>
+
