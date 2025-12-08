@@ -129,8 +129,9 @@
             );
         };
 
-        const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%" }) => {
-            const max = Math.max(...data.map(d => d.value), 1);
+        const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%", chartMax = 100 }) => {
+            // Use chartMax for consistent scaling across charts
+            const max = chartMax;
             return (
                 <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm mb-6">
                     <h4 className="font-bold text-stone-800 mb-12 text-sm uppercase tracking-wide">{title}</h4>
@@ -660,17 +661,20 @@
                                         title="Morning Ritual Completion" 
                                         data={trends.map(t => ({ label: t.label, value: t.mr }))} 
                                         color="bg-gradient-to-r from-brand-orange to-brand-salmon" 
+                                        chartMax={100}
                                     />
                                     <SimpleBarChart 
                                         title="Morning Ritual (Early)" 
                                         data={trends.map(t => ({ label: t.label, value: t.mrEarly }))} 
                                         color="bg-brand-yellow" 
+                                        chartMax={100}
                                     />
                                     <SimpleBarChart 
                                         title="Avg MR Activities" 
                                         data={trends.map(t => ({ label: t.label, value: t.mrAvg }))} 
                                         color="bg-brand-orange"
                                         valueSuffix=""
+                                        chartMax={14}
                                     />
                                     <div className="hidden md:block"></div> {/* Spacer */}
 
@@ -678,17 +682,20 @@
                                         title="Shutdown Ritual Completion" 
                                         data={trends.map(t => ({ label: t.label, value: t.sdr }))} 
                                         color="bg-gradient-to-r from-brand-periwinkle to-brand-purple" 
+                                        chartMax={100}
                                     />
                                     <SimpleBarChart 
                                         title="Shutdown Ritual (Early)" 
                                         data={trends.map(t => ({ label: t.label, value: t.sdrEarly }))} 
                                         color="bg-brand-periwinkle" 
+                                        chartMax={100}
                                     />
                                     <SimpleBarChart 
                                         title="Avg SDR Activities" 
                                         data={trends.map(t => ({ label: t.label, value: t.sdrAvg }))} 
                                         color="bg-brand-purple"
                                         valueSuffix=""
+                                        chartMax={9}
                                     />
                                 </div>
 
@@ -700,21 +707,25 @@
                                             title="Sleep Lights Off" 
                                             data={trends.map(t => ({ label: t.label, value: t.lights }))} 
                                             color="bg-brand-yellow" 
+                                            chartMax={100}
                                         />
                                         <SimpleBarChart 
                                             title="No TV / Soundscapes" 
                                             data={trends.map(t => ({ label: t.label, value: t.tv }))} 
                                             color="bg-brand-blue" 
+                                            chartMax={100}
                                         />
                                         <SimpleBarChart 
                                             title="No Late Snacks" 
                                             data={trends.map(t => ({ label: t.label, value: t.lsib }))} 
                                             color="bg-gradient-to-r from-brand-mint to-brand-teal" 
+                                            chartMax={100}
                                         />
                                         <SimpleBarChart 
                                             title="Bedtime < Midnight" 
                                             data={trends.map(t => ({ label: t.label, value: t.bedtime }))} 
                                             color="bg-brand-purple" 
+                                            chartMax={100}
                                         />
                                     </div>
                                 </div>
@@ -728,21 +739,25 @@
                                     title="Morning Moment" 
                                     data={trends.map(t => ({ label: t.label, value: t.moment }))} 
                                     color="bg-gradient-to-r from-brand-yellow to-brand-orange" 
+                                    chartMax={100}
                                 />
                                 <SimpleBarChart 
                                     title="Meditation" 
                                     data={trends.map(t => ({ label: t.label, value: t.meditation }))} 
                                     color="bg-gradient-to-r from-brand-salmon to-brand-pink" 
+                                    chartMax={100}
                                 />
                                 <SimpleBarChart 
                                     title="Stretch / Walk" 
                                     data={trends.map(t => ({ label: t.label, value: t.stretch }))} 
                                     color="bg-gradient-to-r from-brand-mint to-brand-teal" 
+                                    chartMax={100}
                                 />
                                 <SimpleBarChart 
                                     title="Rooting" 
                                     data={trends.map(t => ({ label: t.label, value: t.rooting }))} 
                                     color="bg-gradient-to-r from-brand-purple to-brand-periwinkle" 
+                                    chartMax={100}
                                 />
                             </div>
                         )}
