@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Habits & PB Tracker</title>
-    
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f575a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11l3 3L22 4'/%3E%3Cpath d='M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'/%3E%3C/svg%3E">
+
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f575a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 11l3 3L22 4'/%3E%3Cpath d='M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'/%3E%3C/svg%3E">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -34,20 +36,73 @@
     </script>
 
     <style>
-        body { margin: 0; padding: 0; font-family: 'Nunito', sans-serif; transition: background 0.5s ease; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); }
-        .modal-overlay { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); }
-        .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            transition: background 0.5s ease;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+        }
+
+        .slide-up {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
+
 <body>
     <div id="root"></div>
 
@@ -55,19 +110,19 @@
         const { useState, useEffect, useMemo } = React;
 
         const Icons = {
-            Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg>,
-            Moon: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
-            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
-            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-            Chart: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-            Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
-            ChevronLeft: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
-            ChevronRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
-            Sparkles: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z" transform="scale(0.85) translate(2,2)"/></svg>,
-            Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
-            Upload: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
-            Trends: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
-            Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Sun: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5" /><path d="M12 1v2" /><path d="M12 21v2" /><path d="M4.22 4.22l1.42 1.42" /><path d="M18.36 18.36l1.42 1.42" /><path d="M1 12h2" /><path d="M21 12h2" /><path d="M4.22 19.78l1.42-1.42" /><path d="M18.36 5.64l1.42-1.42" /></svg>,
+            Moon: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>,
+            Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>,
+            X: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>,
+            Chart: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>,
+            Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>,
+            ChevronLeft: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>,
+            ChevronRight: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>,
+            Sparkles: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z" transform="scale(0.85) translate(2,2)" /></svg>,
+            Activity: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>,
+            Upload: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>,
+            Trends: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>,
+            Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
         };
 
         const INITIAL_DAILY = {
@@ -86,7 +141,7 @@
         };
 
         // --- COMPONENTS ---
-        
+
         const ProgressBar = ({ label, value, max, gradient, subLabel }) => {
             const percentage = max > 0 ? Math.round((value / max) * 100) : 0;
             return (
@@ -108,13 +163,13 @@
         const StackedBar = ({ label, early, late, totalDays, gradientEarly, gradientLate }) => {
             const earlyPct = totalDays > 0 ? (early / totalDays) * 100 : 0;
             const latePct = totalDays > 0 ? (late / totalDays) * 100 : 0;
-            
+
             return (
                 <div className="mb-6">
                     <div className="flex justify-between items-center mb-2">
                         <span className="font-bold text-stone-700">{label}</span>
                         <div className="text-xs font-mono text-stone-500">
-                             <span className="font-bold text-stone-800">{early + late}</span>/{totalDays} Done
+                            <span className="font-bold text-stone-800">{early + late}</span>/{totalDays} Done
                         </div>
                     </div>
                     <div className="flex w-full h-4 rounded-full overflow-hidden shadow-sm bg-stone-100">
@@ -129,40 +184,51 @@
             );
         };
 
-const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%", chartMax = 100 }) => {
-    // Use chartMax for consistent scaling across charts
-    const max = chartMax;
-    return (
-        <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm mb-6">
-            <h4 className="font-bold text-stone-800 mb-12 text-sm uppercase tracking-wide">{title}</h4>
-            <div className={`flex items-end gap-3 ${height} mb-4`}>
-                {data.map((d, i) => (
-                    // 1. Bar Wrapper: Set to h-full (100% height) and relative for positioning the label.
-                    <div key={i} className="flex-1 flex flex-col items-center justify-end h-full relative">
-                        {/* 2. Label: Positioned absolutely. 'bottom-full' places it directly above the bar, 
-                                    and 'mb-1' adds a small 1-unit margin/gap. 
-                                    This element no longer takes up vertical space within the h-full container. */}
-                        <div className="absolute bottom-full mb-1 text-sm font-bold text-stone-600">
-                            {d.value}{valueSuffix}
-                        </div>
-                        {/* 3. The Bar: Can now correctly use 100% of the space when the value is at max. */}
-                        <div 
-                            className={`w-full rounded-t-lg transition-all duration-500 ${color}`}
-                            style={{ height: `${(d.value / max) * 100}%` }}
-                        ></div>
+        const SimpleBarChart = ({
+            data,
+            color,
+            title,
+            height = "h-48",
+            valueSuffix = "%",
+            chartMax = 100,
+            valueFormatter = (v) => `${v}${valueSuffix}`,
+        }) => {
+            const max = chartMax;
+
+            return (
+                <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm mb-6">
+                    <h4 className="font-bold text-stone-800 mb-12 text-sm uppercase tracking-wide">{title}</h4>
+
+                    <div className={`flex items-end gap-3 ${height} mb-4`}>
+                        {data.map((d, i) => {
+                            const safeValue = Number.isFinite(d.value) ? d.value : 0;
+                            const pct = max > 0 ? (safeValue / max) * 100 : 0;
+
+                            return (
+                                <div key={i} className="flex-1 flex flex-col items-center justify-end h-full relative">
+                                    <div className="absolute bottom-full mb-1 text-sm font-bold text-stone-600">
+                                        {valueFormatter(safeValue)}
+                                    </div>
+
+                                    <div
+                                        className={`w-full rounded-t-lg transition-all duration-500 ${color}`}
+                                        style={{ height: `${pct}%` }}
+                                    ></div>
+                                </div>
+                            );
+                        })}
                     </div>
-                ))}
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-                {data.map((d, i) => (
-                    <div key={i} className="flex-1 text-center">
-                        <div className="text-xs font-bold text-stone-500">{d.label}</div>
+
+                    <div className="flex items-center gap-3 mt-2">
+                        {data.map((d, i) => (
+                            <div key={i} className="flex-1 text-center">
+                                <div className="text-xs font-bold text-stone-500">{d.label}</div>
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
-        </div>
-    );
-};
+                </div>
+            );
+        };
 
         const Toggle = ({ label, checked, onChange, icon, activeClass }) => (
             <div onClick={() => onChange(!checked)} className={`cursor-pointer select-none p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between ${checked ? `bg-white ${activeClass} shadow-sm` : 'bg-gray-50 border-gray-200 hover:border-gray-300'}`}>
@@ -180,9 +246,9 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
             <div className="bg-white p-3 rounded-xl border-2 border-gray-100 flex items-center justify-between">
                 <span className="text-sm font-bold text-gray-500 uppercase tracking-wider">{label}</span>
                 <div className="flex items-center gap-2">
-                    <input 
-                        type="number" 
-                        value={value} 
+                    <input
+                        type="number"
+                        value={value}
                         onChange={(e) => onChange(parseInt(e.target.value) || 0)}
                         className="w-12 text-center text-xl font-bold text-gray-800 bg-gray-50 rounded-lg py-1 outline-none focus:ring-2 focus:ring-purple-200"
                     />
@@ -221,9 +287,9 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
             const [activeTab, setActiveTab] = useState('daily');
             const [showReview, setShowReview] = useState(false);
             const [showComparison, setShowComparison] = useState(false);
-            const [showWeekly, setShowWeekly] = useState(false); 
+            const [showWeekly, setShowWeekly] = useState(false);
             const [trendsTab, setTrendsTab] = useState('daily');
-            
+
             // --- INITIAL STATE ---
             const [dailyLogs, setDailyLogs] = useState(() => {
                 const saved = JSON.parse(localStorage.getItem('habits-daily'));
@@ -274,13 +340,13 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                 // Safely construct date from YYYY-MM-DD components to avoid timezone related day shifts
                 const parts = selectedDate.split('-').map(Number);
                 const d = new Date(parts[0], parts[1] - 1, parts[2]); // YYYY, M-1, D
-                
+
                 // Apply the shift
                 d.setDate(d.getDate() + days);
-                
+
                 setSelectedDate(getLocalDateString(d));
             };
-            
+
             // Parse date in local timezone to avoid UTC conversion issues
             const [year, month, day] = selectedDate.split('-').map(Number);
             const displayDate = new Date(year, month - 1, day).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -293,31 +359,46 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
             const yesterdayStr = getLocalDateString(yesterday);
 
             // --- DATA ANALYSIS ---
+
+            const timeStrToMinutes = (t) => {
+                if (!t || typeof t !== 'string' || !t.includes(':')) return null;
+                const [h, m] = t.split(':').map(Number);
+                if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+                return h * 60 + m;
+            };
+
+            const minutesToTimeStr = (mins) => {
+                if (!Number.isFinite(mins) || mins <= 0) return '--:--';
+                const h = Math.floor(mins / 60);
+                const m = mins % 60;
+                return `${h}:${String(m).padStart(2, '0')}`;
+            };
+
             const calculateTrends = () => {
                 const allDates = [...new Set([...Object.keys(dailyLogs), ...Object.keys(pbLogs)])];
                 const months = [...new Set(allDates.map(d => d.slice(0, 7)))].sort();
-                
+
                 return months.map(m => {
                     const dailyDates = Object.keys(dailyLogs).filter(d => d.startsWith(m));
                     const pbDates = Object.keys(pbLogs).filter(d => d.startsWith(m));
                     const totalDailyDays = dailyDates.length || 1;
                     const totalPbDays = pbDates.length || 1;
-                    
+
                     let mrCount = 0, mrEarlyCount = 0, sdrCount = 0, sdrEarlyCount = 0;
                     let mrTotalActs = 0, sdrTotalActs = 0; // for average calculation
-                    
+
                     let lightsCount = 0, tvCount = 0, lsibCount = 0, bedCount = 0;
-                    
+
                     dailyDates.forEach(d => {
                         const log = dailyLogs[d];
-                        if (log?.mr?.done) { 
-                            mrCount++; 
-                            if (log.mr.early) mrEarlyCount++; 
+                        if (log?.mr?.done) {
+                            mrCount++;
+                            if (log.mr.early) mrEarlyCount++;
                             mrTotalActs += (log.mr.count || 0);
                         }
-                        if (log?.sdr?.done) { 
-                            sdrCount++; 
-                            if (log.sdr.early) sdrEarlyCount++; 
+                        if (log?.sdr?.done) {
+                            sdrCount++;
+                            if (log.sdr.early) sdrEarlyCount++;
                             sdrTotalActs += (log.sdr.count || 0);
                         }
                         if (log?.sleep?.lights) lightsCount++;
@@ -325,6 +406,16 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                         if (log?.sleep?.noLSIB) lsibCount++;
                         if (log?.sleep?.bedtime) bedCount++;
                     });
+
+                    const workdayTimes = dailyDates
+                        .map(d => dailyLogs[d])
+                        .filter(log => log?.workday)
+                        .map(log => timeStrToMinutes(log.workday))
+                        .filter(v => v !== null);
+
+                    const workdayAvgMin = workdayTimes.length
+                        ? Math.round(workdayTimes.reduce((a, b) => a + b, 0) / workdayTimes.length)
+                        : 0;
 
                     let momentCount = 0, meditationCount = 0, stretchCount = 0, rootingCount = 0;
                     pbDates.forEach(d => {
@@ -339,6 +430,7 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
 
                     return {
                         label: shortMonth,
+                        workdayAvgMin,
                         mr: Math.round((mrCount / totalDailyDays) * 100),
                         mrEarly: Math.round((mrEarlyCount / totalDailyDays) * 100),
                         mrAvg: Math.round(mrTotalActs / totalDailyDays), // Average MR Activities per day
@@ -362,20 +454,20 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                 const dailyDates = Object.keys(dailyLogs).filter(d => d.startsWith(month));
                 const pbDates = Object.keys(pbLogs).filter(d => d.startsWith(month));
                 const daysInMonth = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
-                const totalDays = dailyDates.length > 0 ? dailyDates.length : daysInMonth; 
+                const totalDays = dailyDates.length > 0 ? dailyDates.length : daysInMonth;
 
                 const workdayTimes = dailyDates
-                    .filter(d => dailyLogs[d].workday && !dailyLogs[d].isWeekend && dailyLogs[d].workday.includes(':'))
+                    .filter(d => dailyLogs[d].workday && dailyLogs[d].workday.includes(':'))
                     .map(d => {
                         const [h, m] = dailyLogs[d].workday.split(':').map(Number);
                         return h * 60 + m;
                     });
-                
-                const avgWorkday = workdayTimes.length > 0 
-                    ? Math.round(workdayTimes.reduce((a,b) => a+b, 0) / workdayTimes.length) 
+
+                const avgWorkday = workdayTimes.length > 0
+                    ? Math.round(workdayTimes.reduce((a, b) => a + b, 0) / workdayTimes.length)
                     : 0;
-                const avgWorkdayStr = avgWorkday 
-                    ? `${Math.floor(avgWorkday/60)}:${(avgWorkday%60).toString().padStart(2,'0')}` 
+                const avgWorkdayStr = avgWorkday
+                    ? `${Math.floor(avgWorkday / 60)}:${(avgWorkday % 60).toString().padStart(2, '0')}`
                     : '--:--';
 
                 const mrEarly = dailyDates.filter(d => dailyLogs[d].mr.done && dailyLogs[d].mr.early).length;
@@ -383,12 +475,12 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                 const sdrEarly = dailyDates.filter(d => dailyLogs[d].sdr.done && dailyLogs[d].sdr.early).length;
                 const sdrLate = dailyDates.filter(d => dailyLogs[d].sdr.done && !dailyLogs[d].sdr.early).length;
 
-                let lights=0, tv=0, lsib=0, bed=0;
+                let lights = 0, tv = 0, lsib = 0, bed = 0;
                 dailyDates.forEach(d => {
-                    if(dailyLogs[d].sleep.lights) lights++;
-                    if(dailyLogs[d].sleep.tv) tv++;
-                    if(dailyLogs[d].sleep.noLSIB) lsib++;
-                    if(dailyLogs[d].sleep.bedtime) bed++;
+                    if (dailyLogs[d].sleep.lights) lights++;
+                    if (dailyLogs[d].sleep.tv) tv++;
+                    if (dailyLogs[d].sleep.noLSIB) lsib++;
+                    if (dailyLogs[d].sleep.bedtime) bed++;
                 });
 
                 let pbCounts = { moment: 0, meditation: 0, stretch: 0, rooting: 0 };
@@ -449,7 +541,7 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
 
             const handleBackup = () => {
                 const backup = { dailyLogs, pbLogs, date: new Date().toISOString() };
-                downloadFile(JSON.stringify(backup, null, 2), `habits_backup_${new Date().toISOString().slice(0,10)}.json`, 'application/json');
+                downloadFile(JSON.stringify(backup, null, 2), `habits_backup_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
             };
 
             const handleRestore = (e) => {
@@ -472,10 +564,10 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
             const WeeklyScreen = () => {
                 // Determine start of week (Sunday) based on current selection or default
                 const getSunday = (d) => {
-                   const date = new Date(d);
-                   const day = date.getDay();
-                   const diff = date.getDate() - day; // adjust when day is sunday
-                   return new Date(date.setDate(diff));
+                    const date = new Date(d);
+                    const day = date.getDay();
+                    const diff = date.getDate() - day; // adjust when day is sunday
+                    return new Date(date.setDate(diff));
                 };
 
                 const [currentWeekStart, setCurrentWeekStart] = useState(() => getSunday(selectedDate));
@@ -500,6 +592,18 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                     return `${currentWeekStart.toLocaleDateString('en-US', opt)} - ${end.toLocaleDateString('en-US', opt)}`;
                 }, [currentWeekStart]);
 
+                const weekWorkdayTimes = weekDates
+                    .map(d => dailyLogs[d])
+                    .filter(log => log?.workday)
+                    .map(log => timeStrToMinutes(log.workday))
+                    .filter(v => v !== null);
+
+                const weekWorkdayAvgMin = weekWorkdayTimes.length
+                    ? Math.round(weekWorkdayTimes.reduce((a, b) => a + b, 0) / weekWorkdayTimes.length)
+                    : 0;
+
+                const weekWorkdayAvgStr = minutesToTimeStr(weekWorkdayAvgMin);
+
                 const shiftWeek = (weeks) => {
                     const newStart = new Date(currentWeekStart);
                     newStart.setDate(newStart.getDate() + (weeks * 7));
@@ -512,26 +616,26 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                         <div className="flex gap-1 md:gap-3 flex-1 justify-between max-w-md">
                             {dates.map((date, idx) => {
                                 const log = logs[date] || (weeklyTab === 'daily' ? INITIAL_DAILY : INITIAL_PB);
-                                const status = checkFn(log); 
+                                const status = checkFn(log);
                                 // status map: 
                                 // 'early' = done early (for rituals)
                                 // true = done (normal/late)
                                 // false = not done
-                                
+
                                 let boxClass = emptyClass;
                                 let content = null;
 
                                 if (isRitual) {
                                     // Extract count if available
                                     const count = (log[dataKey] && log[dataKey].count) || 0;
-                                    
+
                                     // For Rituals: Early = Solid, Late = Faded/Light Fill
                                     if (status === 'early') {
                                         boxClass = `bg-${colorClass} border-${colorClass}`;
-                                        if(count > 0) content = <span className="text-white font-bold text-xs">{count}</span>;
+                                        if (count > 0) content = <span className="text-white font-bold text-xs">{count}</span>;
                                     } else if (status === true) {
-                                        boxClass = `bg-${colorClass}/40 border-${colorClass}`; 
-                                        if(count > 0) content = <span className={`text-${colorClass} font-bold text-xs brightness-50`}>{count}</span>;
+                                        boxClass = `bg-${colorClass}/40 border-${colorClass}`;
+                                        if (count > 0) content = <span className={`text-${colorClass} font-bold text-xs brightness-50`}>{count}</span>;
                                     }
                                 } else {
                                     // For Standard (Booleans): Done = Solid
@@ -539,10 +643,10 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                         boxClass = `bg-${colorClass} border-${colorClass}`;
                                     }
                                 }
-                                
+
                                 return (
                                     <div key={date} className="flex flex-col items-center gap-1">
-                                        <div 
+                                        <div
                                             className={`w-8 h-8 md:w-10 md:h-10 rounded-lg border-2 transition-all flex items-center justify-center ${boxClass} ${status ? 'shadow-sm' : ''}`}
                                             title={date}
                                         >
@@ -558,14 +662,14 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                 return (
                     <div className="fixed inset-0 bg-stone-50 z-50 overflow-y-auto animate-fade-in">
                         <div className="max-w-5xl mx-auto p-4 md:p-8">
-                            
+
                             {/* Header */}
                             <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-4 rounded-3xl shadow-sm border border-stone-200">
                                 <h2 className="text-2xl font-bold text-stone-800 flex items-center gap-3">
                                     <span className="bg-brand-mint/20 text-brand-mint p-2 rounded-xl"><Icons.Calendar /></span>
                                     Weekly Dashboard
                                 </h2>
-                                
+
                                 <div className="flex items-center gap-4 bg-stone-100 p-1 rounded-xl">
                                     <button onClick={() => shiftWeek(-1)} className="p-2 hover:bg-white rounded-lg transition-all"><Icons.ChevronLeft /></button>
                                     <span className="font-bold text-stone-600 min-w-[140px] text-center">{weekLabel}</span>
@@ -577,19 +681,37 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
 
                             {/* Tabs */}
                             <div className="flex gap-4 mb-6">
-                                <button 
-                                    onClick={() => setWeeklyTab('daily')} 
+                                <button
+                                    onClick={() => setWeeklyTab('daily')}
                                     className={`flex-1 py-3 rounded-xl font-bold transition-all ${weeklyTab === 'daily' ? 'bg-brand-orange text-white shadow-md' : 'bg-white text-stone-400 hover:bg-stone-50'}`}
                                 >
                                     Daily Habits
                                 </button>
-                                <button 
-                                    onClick={() => setWeeklyTab('pb')} 
+                                <button
+                                    onClick={() => setWeeklyTab('pb')}
                                     className={`flex-1 py-3 rounded-xl font-bold transition-all ${weeklyTab === 'pb' ? 'bg-brand-purple text-white shadow-md' : 'bg-white text-stone-400 hover:bg-stone-50'}`}
                                 >
                                     Personal Breakthrough
                                 </button>
                             </div>
+
+                            {weeklyTab === 'daily' && (
+                                <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-100 mb-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <div className="text-xs font-bold text-stone-400 uppercase tracking-widest">Workday Start</div>
+                                            <div className="text-3xl font-extrabold text-stone-800 mt-2">{weekWorkdayAvgStr}</div>
+                                            <div className="text-sm text-stone-400 font-bold mt-1">
+                                                Based on {weekWorkdayTimes.length} workday{weekWorkdayTimes.length === 1 ? '' : 's'}
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-brand-mint/20 text-brand-mint p-3 rounded-2xl">
+                                            <Icons.Activity />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Grid Header */}
                             <div className="bg-white p-6 rounded-t-3xl border-b border-stone-100 flex items-center justify-between pr-6 md:pr-8">
@@ -621,7 +743,7 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                     </>
                                 )}
                             </div>
-                            
+
                             <div className="mt-6 text-center text-stone-400 text-xs font-bold uppercase tracking-widest">
                                 Tip: Faded boxes indicate "Late" completion. Numbers indicate # of activities.
                             </div>
@@ -642,17 +764,17 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                             </h2>
                             <button onClick={() => setShowComparison(false)} className="bg-stone-200 hover:bg-stone-300 p-2 rounded-full transition-colors text-stone-500"><Icons.X /></button>
                         </div>
-                        
+
                         {/* Tabs for Daily Habits vs Personal Breakthrough */}
                         <div className="flex gap-4 mb-6">
-                            <button 
-                                onClick={() => setTrendsTab('daily')} 
+                            <button
+                                onClick={() => setTrendsTab('daily')}
                                 className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${trendsTab === 'daily' ? 'bg-gradient-to-r from-brand-orange to-brand-salmon text-white shadow-lg' : 'bg-white text-stone-500 hover:bg-stone-50'}`}
                             >
                                 Daily Habits
                             </button>
-                            <button 
-                                onClick={() => setTrendsTab('pb')} 
+                            <button
+                                onClick={() => setTrendsTab('pb')}
                                 className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${trendsTab === 'pb' ? 'bg-gradient-to-r from-brand-periwinkle to-brand-purple text-white shadow-lg' : 'bg-white text-stone-500 hover:bg-stone-50'}`}
                             >
                                 Personal Breakthrough
@@ -664,74 +786,88 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                             <div className="space-y-8">
                                 {/* Rituals & Activities Section */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <SimpleBarChart 
-                                        title="Morning Ritual Completion" 
-                                        data={trends.map(t => ({ label: t.label, value: t.mr }))} 
-                                        color="bg-gradient-to-r from-brand-orange to-brand-salmon" 
+                                    <SimpleBarChart
+                                        title="Morning Ritual Completion"
+                                        data={trends.map(t => ({ label: t.label, value: t.mr }))}
+                                        color="bg-gradient-to-r from-brand-orange to-brand-salmon"
                                         chartMax={100}
                                     />
-                                    <SimpleBarChart 
-                                        title="Morning Ritual (Early)" 
-                                        data={trends.map(t => ({ label: t.label, value: t.mrEarly }))} 
-                                        color="bg-brand-yellow" 
+
+                                    <SimpleBarChart
+                                        title="Morning Ritual (Early)"
+                                        data={trends.map(t => ({ label: t.label, value: t.mrEarly }))}
+                                        color="bg-brand-yellow"
                                         chartMax={100}
                                     />
-                                    <SimpleBarChart 
-                                        title="Avg MR Activities" 
-                                        data={trends.map(t => ({ label: t.label, value: t.mrAvg }))} 
+
+                                    <SimpleBarChart
+                                        title="Avg MR Activities"
+                                        data={trends.map(t => ({ label: t.label, value: t.mrAvg }))}
                                         color="bg-brand-orange"
                                         valueSuffix=""
                                         chartMax={14}
                                     />
-                                    <div className="hidden md:block"></div> {/* Spacer */}
 
-                                    <SimpleBarChart 
-                                        title="Shutdown Ritual Completion" 
-                                        data={trends.map(t => ({ label: t.label, value: t.sdr }))} 
-                                        color="bg-gradient-to-r from-brand-periwinkle to-brand-purple" 
+                                    <SimpleBarChart
+                                        title="Avg Workday Start"
+                                        data={trends.map(t => ({ label: t.label, value: t.workdayAvgMin }))}
+                                        color="bg-gradient-to-r from-brand-mint to-brand-teal"
+                                        chartMax={24 * 60}
+                                        valueSuffix=""
+                                        valueFormatter={(v) => minutesToTimeStr(v)}
+                                    />
+
+                                    <SimpleBarChart
+                                        title="Shutdown Ritual Completion"
+                                        data={trends.map(t => ({ label: t.label, value: t.sdr }))}
+                                        color="bg-gradient-to-r from-brand-periwinkle to-brand-purple"
                                         chartMax={100}
                                     />
-                                    <SimpleBarChart 
-                                        title="Shutdown Ritual (Early)" 
-                                        data={trends.map(t => ({ label: t.label, value: t.sdrEarly }))} 
-                                        color="bg-brand-periwinkle" 
+
+                                    <SimpleBarChart
+                                        title="Shutdown Ritual (Early)"
+                                        data={trends.map(t => ({ label: t.label, value: t.sdrEarly }))}
+                                        color="bg-brand-periwinkle"
                                         chartMax={100}
                                     />
-                                    <SimpleBarChart 
-                                        title="Avg SDR Activities" 
-                                        data={trends.map(t => ({ label: t.label, value: t.sdrAvg }))} 
+
+                                    <SimpleBarChart
+                                        title="Avg SDR Activities"
+                                        data={trends.map(t => ({ label: t.label, value: t.sdrAvg }))}
                                         color="bg-brand-purple"
                                         valueSuffix=""
                                         chartMax={9}
                                     />
+
+                                    <div className="hidden md:block"></div> {/* Spacer */}
                                 </div>
 
                                 {/* Sleep Hygiene Section */}
                                 <div>
                                     <h3 className="text-xl font-extrabold text-stone-400 uppercase tracking-widest mb-6 border-b border-stone-200 pb-2">Sleep Hygiene</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <SimpleBarChart 
-                                            title="Sleep Lights Off" 
-                                            data={trends.map(t => ({ label: t.label, value: t.lights }))} 
-                                            color="bg-brand-yellow" 
+                                        <SimpleBarChart
+                                            title="Sleep Lights Off"
+                                            data={trends.map(t => ({ label: t.label, value: t.lights }))}
+                                            color="bg-brand-yellow"
                                             chartMax={100}
                                         />
-                                        <SimpleBarChart 
-                                            title="No TV / Soundscapes" 
-                                            data={trends.map(t => ({ label: t.label, value: t.tv }))} 
-                                            color="bg-brand-blue" 
+                                        <SimpleBarChart
+                                            title="No TV / Soundscapes"
+                                            data={trends.map(t => ({ label: t.label, value: t.tv }))}
+                                            color="bg-brand-blue"
                                             chartMax={100}
                                         />
-                                        <SimpleBarChart 
-                                            title="No Late Snacks" 
-                                            data={trends.map(t => ({ label: t.label, value: t.lsib }))} 
-                                            color="bg-gradient-to-r from-brand-mint to-brand-teal" 
+                                        <SimpleBarChart
+                                            title="No Late Snacks"
+                                            data={trends.map(t => ({ label: t.label, value: t.lsib }))}
+                                            color="bg-gradient-to-r from-brand-mint to-brand-teal"
                                             chartMax={100}
                                         />
-                                        <SimpleBarChart 
-                                            title="Bedtime < Midnight" 
-                                            data={trends.map(t => ({ label: t.label, value: t.bedtime }))} 
-                                            color="bg-brand-purple" 
+                                        <SimpleBarChart
+                                            title="Bedtime < Midnight"
+                                            data={trends.map(t => ({ label: t.label, value: t.bedtime }))}
+                                            color="bg-brand-purple"
                                             chartMax={100}
                                         />
                                     </div>
@@ -742,28 +878,28 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                         {/* Personal Breakthrough Trends */}
                         {trendsTab === 'pb' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <SimpleBarChart 
-                                    title="Morning Moment" 
-                                    data={trends.map(t => ({ label: t.label, value: t.moment }))} 
-                                    color="bg-gradient-to-r from-brand-yellow to-brand-orange" 
+                                <SimpleBarChart
+                                    title="Morning Moment"
+                                    data={trends.map(t => ({ label: t.label, value: t.moment }))}
+                                    color="bg-gradient-to-r from-brand-yellow to-brand-orange"
                                     chartMax={100}
                                 />
-                                <SimpleBarChart 
-                                    title="Meditation" 
-                                    data={trends.map(t => ({ label: t.label, value: t.meditation }))} 
-                                    color="bg-gradient-to-r from-brand-salmon to-brand-pink" 
+                                <SimpleBarChart
+                                    title="Meditation"
+                                    data={trends.map(t => ({ label: t.label, value: t.meditation }))}
+                                    color="bg-gradient-to-r from-brand-salmon to-brand-pink"
                                     chartMax={100}
                                 />
-                                <SimpleBarChart 
-                                    title="Stretch / Walk" 
-                                    data={trends.map(t => ({ label: t.label, value: t.stretch }))} 
-                                    color="bg-gradient-to-r from-brand-mint to-brand-teal" 
+                                <SimpleBarChart
+                                    title="Stretch / Walk"
+                                    data={trends.map(t => ({ label: t.label, value: t.stretch }))}
+                                    color="bg-gradient-to-r from-brand-mint to-brand-teal"
                                     chartMax={100}
                                 />
-                                <SimpleBarChart 
-                                    title="Rooting" 
-                                    data={trends.map(t => ({ label: t.label, value: t.rooting }))} 
-                                    color="bg-gradient-to-r from-brand-purple to-brand-periwinkle" 
+                                <SimpleBarChart
+                                    title="Rooting"
+                                    data={trends.map(t => ({ label: t.label, value: t.rooting }))}
+                                    color="bg-gradient-to-r from-brand-purple to-brand-periwinkle"
                                     chartMax={100}
                                 />
                             </div>
@@ -786,8 +922,8 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                 <button onClick={() => setShowComparison(true)} className="text-sm font-bold text-brand-purple hover:bg-brand-purple/10 px-3 py-2 rounded-lg transition-colors flex items-center gap-1">
                                     <Icons.Trends /> View Trends
                                 </button>
-                                <input 
-                                    type="month" 
+                                <input
+                                    type="month"
                                     value={reviewMonth}
                                     onChange={(e) => setReviewMonth(e.target.value)}
                                     className="bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-bold text-stone-600 outline-none"
@@ -800,7 +936,7 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
                                 <h3 className="text-lg font-bold text-stone-800 mb-6 flex items-center gap-2"><Icons.Sun /> Morning Rituals</h3>
-                                <StackedBar 
+                                <StackedBar
                                     label="Completion"
                                     early={reviewStats.mr.early}
                                     late={reviewStats.mr.late}
@@ -816,7 +952,7 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
 
                             <div className="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
                                 <h3 className="text-lg font-bold text-stone-800 mb-6 flex items-center gap-2"><Icons.Moon /> Shutdown Rituals</h3>
-                                <StackedBar 
+                                <StackedBar
                                     label="Completion"
                                     early={reviewStats.sdr.early}
                                     late={reviewStats.sdr.late}
@@ -831,31 +967,31 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                         <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-100 mb-8">
                             <h3 className="text-lg font-bold text-stone-800 mb-6 uppercase tracking-wider text-sm">Sleep Hygiene</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2">
-                                <ProgressBar 
-                                    label="Lights Off" 
-                                    value={reviewStats.sleep.lights} 
-                                    max={reviewStats.totalDays} 
+                                <ProgressBar
+                                    label="Lights Off"
+                                    value={reviewStats.sleep.lights}
+                                    max={reviewStats.totalDays}
                                     gradient="bg-gradient-to-r from-brand-yellow to-brand-orange"
                                     subLabel={`${reviewStats.sleep.lights}/${reviewStats.totalDays}`}
                                 />
-                                <ProgressBar 
-                                    label="No TV / Soundscapes" 
-                                    value={reviewStats.sleep.tv} 
-                                    max={reviewStats.totalDays} 
+                                <ProgressBar
+                                    label="No TV / Soundscapes"
+                                    value={reviewStats.sleep.tv}
+                                    max={reviewStats.totalDays}
                                     gradient="bg-brand-blue"
                                     subLabel={`${reviewStats.sleep.tv}/${reviewStats.totalDays}`}
                                 />
-                                <ProgressBar 
-                                    label="No Late Snacks" 
-                                    value={reviewStats.sleep.lsib} 
-                                    max={reviewStats.totalDays} 
+                                <ProgressBar
+                                    label="No Late Snacks"
+                                    value={reviewStats.sleep.lsib}
+                                    max={reviewStats.totalDays}
                                     gradient="bg-gradient-to-r from-brand-mint to-brand-teal"
                                     subLabel={`${reviewStats.sleep.lsib}/${reviewStats.totalDays}`}
                                 />
-                                <ProgressBar 
-                                    label="Bedtime < Midnight" 
-                                    value={reviewStats.sleep.bed} 
-                                    max={reviewStats.totalDays} 
+                                <ProgressBar
+                                    label="Bedtime < Midnight"
+                                    value={reviewStats.sleep.bed}
+                                    max={reviewStats.totalDays}
                                     gradient="bg-gradient-to-r from-brand-periwinkle to-brand-purple"
                                     subLabel={`${reviewStats.sleep.bed}/${reviewStats.totalDays}`}
                                 />
@@ -866,31 +1002,31 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                         <div className="bg-white p-8 rounded-3xl shadow-sm border border-stone-100">
                             <h3 className="text-lg font-bold text-stone-800 mb-6 uppercase tracking-wider text-sm">Personal Breakthrough</h3>
                             <div className="space-y-4">
-                                <ProgressBar 
-                                    label="Morning Moment" 
-                                    value={reviewStats.pb.moment} 
-                                    max={reviewStats.totalDays} 
+                                <ProgressBar
+                                    label="Morning Moment"
+                                    value={reviewStats.pb.moment}
+                                    max={reviewStats.totalDays}
                                     gradient="bg-gradient-to-r from-brand-yellow to-brand-orange"
                                     subLabel={`${reviewStats.pb.moment}/${reviewStats.totalDays}`}
                                 />
-                                <ProgressBar 
-                                    label="Meditation" 
-                                    value={reviewStats.pb.meditation} 
-                                    max={reviewStats.totalDays} 
+                                <ProgressBar
+                                    label="Meditation"
+                                    value={reviewStats.pb.meditation}
+                                    max={reviewStats.totalDays}
                                     gradient="bg-gradient-to-r from-brand-salmon to-brand-pink"
                                     subLabel={`${reviewStats.pb.meditation}/${reviewStats.totalDays}`}
                                 />
-                                <ProgressBar 
-                                    label="Stretch / Walk" 
-                                    value={reviewStats.pb.stretch} 
-                                    max={reviewStats.totalDays} 
+                                <ProgressBar
+                                    label="Stretch / Walk"
+                                    value={reviewStats.pb.stretch}
+                                    max={reviewStats.totalDays}
                                     gradient="bg-gradient-to-r from-brand-mint to-brand-teal"
                                     subLabel={`${reviewStats.pb.stretch}/${reviewStats.totalDays}`}
                                 />
-                                <ProgressBar 
-                                    label="Rooting" 
-                                    value={reviewStats.pb.rooting} 
-                                    max={reviewStats.totalDays} 
+                                <ProgressBar
+                                    label="Rooting"
+                                    value={reviewStats.pb.rooting}
+                                    max={reviewStats.totalDays}
                                     gradient="bg-gradient-to-r from-brand-purple to-brand-periwinkle"
                                     subLabel={`${reviewStats.pb.rooting}/${reviewStats.totalDays}`}
                                 />
@@ -908,7 +1044,7 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
             return (
                 <div className={`min-h-screen ${theme.bg} p-4 md:p-8 transition-colors duration-500`}>
                     <div className="max-w-4xl mx-auto">
-                        
+
                         {/* Header */}
                         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                             <h1 className="text-3xl font-extrabold text-stone-800 flex items-center gap-3">
@@ -936,9 +1072,9 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                 <button onClick={() => shiftDate(-1)} className="p-2 hover:bg-stone-100 rounded-lg"><Icons.ChevronLeft /></button>
                                 <div className="flex flex-col items-center mx-4">
                                     <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">Selected Date</span>
-                                    <input 
-                                        type="date" 
-                                        value={selectedDate} 
+                                    <input
+                                        type="date"
+                                        value={selectedDate}
                                         onChange={(e) => setSelectedDate(e.target.value)}
                                         className="text-lg font-bold text-stone-800 bg-transparent outline-none cursor-pointer text-center"
                                     />
@@ -946,16 +1082,16 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                 </div>
                                 <button onClick={() => shiftDate(1)} className="p-2 hover:bg-stone-100 rounded-lg"><Icons.ChevronRight /></button>
                             </div>
-                            
+
                             <div className="flex items-center gap-2 bg-stone-100 p-1 rounded-xl">
-                                <button 
-                                    onClick={() => setSelectedDate(todayStr)} 
+                                <button
+                                    onClick={() => setSelectedDate(todayStr)}
                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedDate === todayStr ? 'bg-white shadow-sm text-brand-orange' : 'text-stone-600 hover:bg-white/50'}`}
                                 >
                                     Today
                                 </button>
-                                <button 
-                                    onClick={() => setSelectedDate(yesterdayStr)} 
+                                <button
+                                    onClick={() => setSelectedDate(yesterdayStr)}
                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${selectedDate === yesterdayStr ? 'bg-white shadow-sm text-brand-orange' : 'text-stone-600 hover:bg-white/50'}`}
                                 >
                                     Yesterday
@@ -965,14 +1101,14 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
 
                         {/* Tabs */}
                         <div className="flex gap-4 mb-6">
-                            <button 
-                                onClick={() => setActiveTab('daily')} 
+                            <button
+                                onClick={() => setActiveTab('daily')}
                                 className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${activeTab === 'daily' ? 'bg-gradient-to-r from-brand-orange to-brand-salmon text-white shadow-lg shadow-brand-orange/20 transform scale-[1.02]' : 'bg-white text-stone-500 hover:bg-stone-50'}`}
                             >
                                 Daily Habits
                             </button>
-                            <button 
-                                onClick={() => setActiveTab('pb')} 
+                            <button
+                                onClick={() => setActiveTab('pb')}
                                 className={`flex-1 py-4 rounded-2xl font-bold text-lg transition-all ${activeTab === 'pb' ? 'bg-gradient-to-r from-brand-periwinkle to-brand-purple text-white shadow-lg shadow-brand-periwinkle/20 transform scale-[1.02]' : 'bg-white text-stone-500 hover:bg-stone-50'}`}
                             >
                                 Personal Breakthrough
@@ -992,14 +1128,14 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                     <div className="mb-6">
                                         <label className="block text-sm font-bold text-stone-500 mb-2 uppercase">Workday Start</label>
                                         <div className="flex gap-2">
-                                            <input 
-                                                type="time" 
-                                                value={currentDaily.workday} 
+                                            <input
+                                                type="time"
+                                                value={currentDaily.workday}
                                                 disabled={currentDaily.isWeekend}
                                                 onChange={(e) => updateDaily({ workday: e.target.value })}
                                                 className={`flex-1 p-3 rounded-xl border-2 font-bold text-lg outline-none focus:border-brand-orange ${currentDaily.isWeekend ? 'bg-stone-100 text-stone-400' : 'bg-white text-stone-800'}`}
                                             />
-                                            <button 
+                                            <button
                                                 onClick={() => updateDaily({ isWeekend: !currentDaily.isWeekend, workday: '' })}
                                                 className={`px-4 rounded-xl font-bold border-2 transition-colors ${currentDaily.isWeekend ? 'bg-stone-600 text-white border-stone-600' : 'bg-white text-stone-400 border-stone-200'}`}
                                             >
@@ -1014,26 +1150,26 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                             <label className="text-sm font-bold text-stone-500 uppercase">Morning Ritual (MR)</label>
                                             {currentDaily.mr.early && <span className="text-xs bg-brand-yellow/30 text-stone-700 px-2 py-1 rounded-full font-bold">🌞 Early Bird</span>}
                                         </div>
-                                        <Toggle 
-                                            label="MR Completed" 
-                                            checked={currentDaily.mr.done} 
-                                            onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, done: val } })} 
+                                        <Toggle
+                                            label="MR Completed"
+                                            checked={currentDaily.mr.done}
+                                            onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, done: val } })}
                                             activeClass="border-brand-orange"
                                         />
                                         {currentDaily.mr.done && (
                                             <div className="pl-4 border-l-2 border-brand-orange/30 space-y-3 slide-up">
-                                                <Toggle 
-                                                    label="Before 10:00 AM?" 
-                                                    checked={currentDaily.mr.early} 
-                                                    onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, early: val } })} 
+                                                <Toggle
+                                                    label="Before 10:00 AM?"
+                                                    checked={currentDaily.mr.early}
+                                                    onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, early: val } })}
                                                     activeClass="border-brand-yellow"
                                                     icon="🌞"
                                                 />
-                                                <NumberInput 
-                                                    label="Activities Count" 
-                                                    value={currentDaily.mr.count} 
-                                                    max={14} 
-                                                    onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, count: val } })} 
+                                                <NumberInput
+                                                    label="Activities Count"
+                                                    value={currentDaily.mr.count}
+                                                    max={14}
+                                                    onChange={(val) => updateDaily({ mr: { ...currentDaily.mr, count: val } })}
                                                 />
                                             </div>
                                         )}
@@ -1052,26 +1188,26 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                             <label className="text-sm font-bold text-stone-500 uppercase">Shutdown Ritual (SDR)</label>
                                             {currentDaily.sdr.early && <span className="text-xs bg-brand-periwinkle/30 text-stone-700 px-2 py-1 rounded-full font-bold">🌙 Early</span>}
                                         </div>
-                                        <Toggle 
-                                            label="SDR Completed" 
-                                            checked={currentDaily.sdr.done} 
-                                            onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, done: val } })} 
+                                        <Toggle
+                                            label="SDR Completed"
+                                            checked={currentDaily.sdr.done}
+                                            onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, done: val } })}
                                             activeClass="border-brand-purple"
                                         />
                                         {currentDaily.sdr.done && (
                                             <div className="pl-4 border-l-2 border-brand-purple/30 space-y-3 slide-up">
-                                                <Toggle 
-                                                    label="Before 10:30 PM?" 
-                                                    checked={currentDaily.sdr.early} 
-                                                    onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, early: val } })} 
+                                                <Toggle
+                                                    label="Before 10:30 PM?"
+                                                    checked={currentDaily.sdr.early}
+                                                    onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, early: val } })}
                                                     activeClass="border-brand-periwinkle"
                                                     icon="🌙"
                                                 />
-                                                <NumberInput 
-                                                    label="Activities Count" 
-                                                    value={currentDaily.sdr.count} 
-                                                    max={9} 
-                                                    onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, count: val } })} 
+                                                <NumberInput
+                                                    label="Activities Count"
+                                                    value={currentDaily.sdr.count}
+                                                    max={9}
+                                                    onChange={(val) => updateDaily({ sdr: { ...currentDaily.sdr, count: val } })}
                                                 />
                                             </div>
                                         )}
@@ -1080,31 +1216,31 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                     {/* Sleep Hygiene */}
                                     <div className="space-y-3">
                                         <label className="text-sm font-bold text-stone-500 uppercase">Sleep Hygiene</label>
-                                        <Toggle 
-                                            label="Sleep Lights Off" 
-                                            checked={currentDaily.sleep.lights} 
-                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, lights: val } })} 
+                                        <Toggle
+                                            label="Sleep Lights Off"
+                                            checked={currentDaily.sleep.lights}
+                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, lights: val } })}
                                             activeClass="border-brand-yellow"
                                             icon="💡"
                                         />
-                                        <Toggle 
-                                            label="No TV / Soundscapes" 
-                                            checked={currentDaily.sleep.tv} 
-                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, tv: val } })} 
+                                        <Toggle
+                                            label="No TV / Soundscapes"
+                                            checked={currentDaily.sleep.tv}
+                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, tv: val } })}
                                             activeClass="border-brand-blue"
                                             icon="📺"
                                         />
-                                        <Toggle 
-                                            label="No Late Snacks" 
-                                            checked={currentDaily.sleep.noLSIB} 
-                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, noLSIB: val } })} 
+                                        <Toggle
+                                            label="No Late Snacks"
+                                            checked={currentDaily.sleep.noLSIB}
+                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, noLSIB: val } })}
                                             activeClass="border-brand-mint"
                                             icon="💪"
                                         />
-                                        <Toggle 
-                                            label="Bedtime < Midnight" 
-                                            checked={currentDaily.sleep.bedtime} 
-                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, bedtime: val } })} 
+                                        <Toggle
+                                            label="Bedtime < Midnight"
+                                            checked={currentDaily.sleep.bedtime}
+                                            onChange={(val) => updateDaily({ sleep: { ...currentDaily.sleep, bedtime: val } })}
                                             activeClass="border-brand-purple"
                                             icon="🌚"
                                         />
@@ -1120,31 +1256,31 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
                                     <Icons.Sparkles /> Daily Practices
                                 </h3>
                                 <div className="space-y-4">
-                                    <Toggle 
-                                        label="Morning Moment" 
-                                        checked={currentPB.moment} 
-                                        onChange={(val) => updatePB({ moment: val })} 
+                                    <Toggle
+                                        label="Morning Moment"
+                                        checked={currentPB.moment}
+                                        onChange={(val) => updatePB({ moment: val })}
                                         activeClass="border-brand-yellow"
                                         icon="✨"
                                     />
-                                    <Toggle 
-                                        label="Meditation" 
-                                        checked={currentPB.meditation} 
-                                        onChange={(val) => updatePB({ meditation: val })} 
+                                    <Toggle
+                                        label="Meditation"
+                                        checked={currentPB.meditation}
+                                        onChange={(val) => updatePB({ meditation: val })}
                                         activeClass="border-brand-pink"
                                         icon="🧘‍♀️"
                                     />
-                                    <Toggle 
-                                        label="Stretch / Walk" 
-                                        checked={currentPB.stretch} 
-                                        onChange={(val) => updatePB({ stretch: val })} 
+                                    <Toggle
+                                        label="Stretch / Walk"
+                                        checked={currentPB.stretch}
+                                        onChange={(val) => updatePB({ stretch: val })}
                                         activeClass="border-brand-teal"
                                         icon="🏃‍♀️"
                                     />
-                                    <Toggle 
-                                        label="Rooting" 
-                                        checked={currentPB.rooting} 
-                                        onChange={(val) => updatePB({ rooting: val })} 
+                                    <Toggle
+                                        label="Rooting"
+                                        checked={currentPB.rooting}
+                                        onChange={(val) => updatePB({ rooting: val })}
                                         activeClass="border-brand-purple"
                                         icon="🌳"
                                     />
@@ -1191,5 +1327,5 @@ const SimpleBarChart = ({ data, color, title, height = "h-48", valueSuffix = "%"
         root.render(<App />);
     </script>
 </body>
-</html>
 
+</html>
